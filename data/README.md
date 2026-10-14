@@ -1,60 +1,303 @@
-# 데이터
+# 데이터 명세
 
-원자료와 분석 산출물은 크고 재생성 가능하므로 Git에 포함하지 않는다(예외: `processed/`의 속도 모델 조회표 두 개). 아래 표의 출처에서 내려받아 **같은 경로와 파일명**으로 두면 코드가 그대로 읽는다.
+본 연구는 **7개 기관·9개 플랫폼의 공공데이터 23종(원자료 약 110GB)**을 결합하였다. 이 문서는 각 데이터를 **왜 선정했는지**, **분석의 어느 단계에서 무엇으로 쓰였는지**, **어떻게 전처리·결합했는지**를 정리한다. 내려받은 파일을 아래 저장 경로와 같은 이름으로 두면 코드가 그대로 읽는다.
 
-| 폴더 | 의미 |
+## 목차
+
+1. [개요](#1-개요)
+2. [데이터 체계](#2-데이터-체계)
+3. [데이터별 명세](#3-데이터별-명세)
+4. [데이터 결합 구조](#4-데이터-결합-구조)
+5. [기간 정합성](#5-기간-정합성)
+6. [품질 관리 원칙](#6-품질-관리-원칙)
+7. [저장 구조와 산출물](#7-저장-구조와-산출물)
+
+## 1. 개요
+
+| 항목 | 내용 |
 | --- | --- |
-| `raw/` | 내려받은 원본(수정하지 않음) |
-| `interim/` | 파이프라인 중간 결과(코드로 재생성) |
-| `processed/` | 모델·분석이 읽는 산출물(코드로 재생성) |
+| 데이터 수 | 공공데이터 23종(제공기관 7곳: 국토교통부, 국토지리정보원, 기상청, 서울특별시, KT, 한국교통연구원, 한국도로교통공단) |
+| 원자료 규모 | 약 110GB(5분 단위 통행속도 93GB, 레이더 강수 16GB 포함) |
+| 공간 범위 | 서울 행정경계와 교차하는 방향성 도로 링크 63,548개, 마을버스 247개 노선 |
+| 시간 범위 | 2026년 7월(도로 속도·강수는 7월 7~20일 공통 기간) |
+| 분석 단위 | 도로 링크(`LINK_ID`) × 시간대, 버스 노선(`ROUTE_ID`), 정류장(`NODE_ID`), 250m 격자, 행정동 |
+| Git 포함 여부 | 원자료와 산출물은 포함하지 않는다. 예외로 속도 모델 조회표 2개(`processed/model_a_lookup.parquet`, `neighbor_speed_lookup.parquet`)와 학습된 모델(`src/models/artifacts/`)은 포함하여 원자료 없이도 예측 단계를 실행할 수 있게 하였다 |
 
-## 1. 원자료(`raw/`)
+## 2. 데이터 체계
 
-### 도로망·지형·기상(속도 모델용)
+데이터는 분석 목적에 따라 네 묶음으로 나뉜다.
 
-| 경로 | 데이터 | 출처 |
+```text
+[A] 도로 속도 추정        도로망·관측속도·지형·기상·시설·교통·인구
+     └→ AI 속도 모델(src/pipeline, src/models) → 전 링크 시간대별 속도
+                                                        │
+[B] 수송·운행              노선 정류장·실제 경로·승하차·운행횟수    │
+     └→ 노선 맵매칭·재차인원(src/transit/01, 05) ←───────┘ 속도·경사
+                                                        ↓
+[D] 차량 구성              자동차 등록·마을버스 연료 현황  → 버스·승용차 탄소 비교(05~07)
+
+[C] 고령자·대체수단        생활인구·지하철역·정류장 분포   → 의존도·노선 제거 접근성(02, 09, 11)
+```
+
+| 묶음 | 분석 질문 | 데이터 |
 | --- | --- | --- |
-| `raw/road/MOCT_LINK.*`, `MOCT_NODE.*`, `TURNINFO.dbf` | 전국 표준노드링크 | [ITS 국가교통정보센터](https://www.its.go.kr/nodelink/nodelinkStatus?service=inquiryNodelink) |
-| `raw/boundary/seoul_admin_boundary.geojson` | 서울 자치구 경계(EPSG:4326) | [브이월드](https://www.vworld.kr/) 행정구역 경계에서 서울 25개 구 추출 |
-| `raw/traffic/202607_5Min/*_5Min.csv` | 교통소통정보 5분 단위 통행속도(2026년 7월) | [ITS 국가교통정보센터 오픈데이터](https://www.its.go.kr/opendata/) |
-| `raw/dem/*.img` | 수치표고모델(서울 도엽) | [국토정보플랫폼](https://map.ngii.go.kr/) |
-| `raw/weather/grid/hsr_lon.txt`, `hsr_lat.txt` | HSR 레이더 격자 위·경도 | 기상청 API허브(`src/pipeline/03 --grid`) |
-| `raw/weather/radar/hsr_pcph_acc60_{YYYYMMDDHHMM}.txt` | HSR 기반 1시간 누적 강수 | [기상청 API허브](https://apihub.kma.go.kr/apiList.do?seqApi=5)(`src/pipeline/03`, 키는 환경변수 `KMA_API_KEY`) |
-| `raw/traffic/bus_lane/bus_lane.shp` | 서울시 버스전용차로 위치 | [서울 열린데이터광장 OA-22396](https://data.seoul.go.kr/dataList/OA-22396/F/1/datasetView.do) |
-| `raw/traffic/school_zone/school_zone.shp` | 서울시 어린이 보호구역 | [서울 열린데이터광장 OA-2799](https://data.seoul.go.kr/dataList/OA-2799/F/1/datasetView.do) |
-| `raw/traffic/speed_bump/speed_bump.shp` | 과속방지턱(험프) | [서울 열린데이터광장 OA-15541](https://data.seoul.go.kr/dataList/OA-15541/A/1/datasetView.do) |
-| `raw/traffic/pedestrian_accident_2019_2024.csv` | 보행자 교통사고 다발지역 | [교통사고정보 개방시스템](https://opendata.koroad.or.kr/api/selectPedstriansDataSet.do) |
-| `raw/traffic/traffic_volume.xlsx` | 링크별 교통량·AADT | [한국교통연구원 View-T](https://viewt.ktdb.go.kr/cong/map/second_map.do) |
-| `raw/traffic/AverageSpeed(LINK).xlsx`, `CongestIndex(LINK).xlsx` | 시간대별 평균속도, 혼잡빈도·혼잡시간 | 〃 |
-| `raw/traffic/250_LOCAL_RESD_202607/`, `250_LOCAL_RESD_ADMDONG_202607/` | 생활인구(250m 격자·행정동, 2026년 7월 일별) | [서울 열린데이터광장 생활인구](https://data.seoul.go.kr/dataVisual/seoul/seoulLivingPopulation.do) |
-| `raw/traffic/match/match.shp` | 250m 격자 도형 | 〃(격자 경계 파일) |
+| A. 도로 속도 추정 | 관측이 없는 골목길까지 시간대별 속도를 얼마나 정확히 채울 수 있는가 | 표준노드링크, 5분 통행속도, DEM, 레이더 강수, 버스전용차로, 어린이 보호구역, 과속방지턱, 보행자 사고다발지역, 교통량·View-T, 생활인구 |
+| B. 수송·운행 | 노선별로 차 안에 몇 명이 타고, 몇 번 운행하는가 | 노선별 정류소, 실제 경로, 정류장별 승하차, 정류장별 운행횟수, 노선유형별 통행속도 |
+| C. 고령자·대체수단 | 누가 이 노선에 의존하며, 노선이 사라지면 얼마나 더 걸어야 하는가 | 생활인구(격자·행정동), 지하철 역사, 정류장 분포(B와 공유) |
+| D. 차량 구성 | 서울의 실제 버스·승용차는 어떤 연료로 구성되는가 | 연료별 자동차 등록(자치구·행정동), 마을버스 연료별 현황 |
 
-### 마을버스 분석용
+## 3. 데이터별 명세
 
-| 경로 | 데이터 | 출처 |
+### A. 도로 속도 추정
+
+#### A1. 국가표준노드링크
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 국토교통부 · [ITS 국가교통정보센터](https://www.its.go.kr/nodelink/nodelinkStatus?service=inquiryNodelink) |
+| 형태·규모 | Shapefile(링크·노드·회전정보), 796MB |
+| 주요 항목 | `LINK_ID`, `F_NODE`, `T_NODE`, `LENGTH`, `LANES`, `MAX_SPD`, `ROAD_RANK`, `ROAD_TYPE`, `ROAD_USE`, `ROAD_NAME` |
+| 선정 이유 | 국가 표준 도로망으로, 5분 통행속도·교통량·View-T가 모두 같은 `LINK_ID`를 써서 이종 자료를 결합하는 기준 키가 된다. 진행 방향(`F_NODE→T_NODE`)이 있어 방향성 경사와 맵매칭이 가능하다 |
+| 사용처 | `pipeline/01` 서울 경계와 교차하는 링크 63,548개 추출 → `pipeline/04` 링크 차원 표(차로수·제한속도·도로등급·도로망 위상) → `transit/01` 노선 경로 맵매칭 → `transit/09`·`11` 고령자 보행 도로망 |
+| 저장 경로 | `raw/road/MOCT_LINK.*`, `MOCT_NODE.*`, `TURNINFO.dbf` |
+
+#### A2. 서울 행정경계
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 국토교통부 · [브이월드](https://www.vworld.kr/) |
+| 형태·규모 | GeoJSON(25개 자치구, EPSG:4326), 1.6MB |
+| 선정 이유 | 분석 공간 범위(서울)를 정의한다 |
+| 사용처 | `pipeline/01` 서울 링크 선별, `transit/report_figures` 지도 바탕 |
+| 저장 경로 | `raw/boundary/seoul_admin_boundary.geojson` |
+
+#### A3. 교통소통정보 5분 단위 통행속도
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 국토교통부 · [ITS 국가교통정보센터 오픈데이터](https://www.its.go.kr/opendata/) |
+| 형태·규모 | 일별 CSV(전국 링크 × 5분), 2026년 7월, 93.1GB |
+| 주요 항목 | 링크 ID, 일자, 시각(`HHMM`), 평균속도 |
+| 선정 이유 | 도로 링크의 실제 관측속도로, AI 속도 모델의 **학습 목표(정답)**이다. 서울 링크의 70.75%(44,960개)에 관측이 있다 |
+| 사용처 | `pipeline/02` 서울 링크만 걸러 링크×날짜×시간 평균과 표본 수(`sample_count_5min`, 최대 12) 산출 → `pipeline/05` 관측속도 팩트(15,094,335행) → `models/01` Model A 이력 조회표, `models/02` B·C 학습 |
+| 전처리 | Polars lazy scan으로 메모리에 올리지 않고 필터·집계. 표본 수를 학습 가중치로 사용 |
+| 저장 경로 | `raw/traffic/202607_5Min/*_5Min.csv` |
+
+#### A4. 수치표고모델(DEM)
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 국토지리정보원 · [국토정보플랫폼](https://map.ngii.go.kr/) |
+| 형태·규모 | 서울 도엽 4개(`.img`), 1.6MB |
+| 선정 이유 | 경사는 차량 에너지(오르막 중력 저항)와 고령자 보행속도를 좌우한다. 마을버스는 언덕 주거지를 운행하므로 경사 반영이 필수다 |
+| 사용처 | `pipeline/04` 링크 선형의 0·25·50·75·100% 지점 표고 → 진행 방향 경사(`slope_pct`) → 속도 모델 변수, `transit/04~07` 차량 에너지, `transit/09`·`11` Tobler 보행속도 |
+| 전처리 | 짧은 링크의 비현실적 경사를 막기 위해 원값을 보존하고 계산에는 ±12%로 제한 |
+| 저장 경로 | `raw/dem/*.img` |
+
+#### A5. HSR 기반 1시간 누적 레이더 강수
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 기상청 · [기상청 API허브](https://apihub.kma.go.kr/apiList.do?seqApi=5) |
+| 형태·규모 | 시점별 격자 텍스트(337개), 16GB + 격자 위·경도 136MB |
+| 선정 이유 | 강수는 통행속도를 낮추는 외생 요인이다. 관측소 자료보다 공간 해상도가 높아 링크 단위로 붙일 수 있다 |
+| 사용처 | `pipeline/03` 수집(API 키는 환경변수 `KMA_API_KEY`) → `pipeline/05`·`models/weather_snapshot` 링크 중심점 최근접 격자 강수(`precip_mm`) → 속도 모델 변수 |
+| 전처리 | 원시값 `-25000`은 관측영역 내 무강수(0mm), `-30000` 이하는 결측 |
+| 저장 경로 | `raw/weather/radar/hsr_pcph_acc60_{YYYYMMDDHHMM}.txt`, `raw/weather/grid/hsr_lon.txt`, `hsr_lat.txt` |
+
+#### A6. 도로 시설·안전(버스전용차로, 어린이 보호구역, 과속방지턱, 보행자 사고다발지역)
+
+| 데이터 | 제공 | 규모 | 링크 결합 방법 → 변수 |
+| --- | --- | --- | --- |
+| 버스전용차로 위치 | 서울특별시 · [OA-22396](https://data.seoul.go.kr/dataList/OA-22396/F/1/datasetView.do) | 1.2MB(선) | 차로선 8m 버퍼와 겹치는 링크 길이 비율 → `bus_lane_ratio` |
+| 어린이 보호구역 | 서울특별시 · [OA-2799](https://data.seoul.go.kr/dataList/OA-2799/F/1/datasetView.do) | 2.7MB(점) | 시설 200m 버퍼와 교차하는 개수 → `school_zone_count` |
+| 과속방지턱(험프) | 서울특별시 · [OA-15541](https://data.seoul.go.kr/dataList/OA-15541/A/1/datasetView.do) | 5.1MB(점) | 10m 버퍼와 교차하는 개수 → `speed_bump_count` |
+| 보행자 교통사고 다발지역(2019~2024) | 한국도로교통공단 · [교통사고정보 개방시스템](https://opendata.koroad.or.kr/api/selectPedstriansDataSet.do) | 2.1MB(다각형) | 다발지역과 교차하는 링크의 사고건수 합 → `accident_hotspot_count` |
+
+- **선정 이유**: 마을버스가 다니는 골목은 신호보다 시설(과속방지턱, 보호구역)과 보행자 밀도가 속도를 제약한다. 관측이 없는 골목의 속도를 추정하려면 이러한 국지적 제약을 변수로 넣어야 한다.
+- **사용처**: `pipeline/04` 링크 차원 표 → 속도 모델 변수. `transit/03` 노선별 과속방지턱 밀도·보호구역 비중(도로 조건 지표).
+- **저장 경로**: `raw/traffic/bus_lane/`, `school_zone/`, `speed_bump/`, `pedestrian_accident_2019_2024.csv`
+
+#### A7. 교통량·혼잡·평균속도(View-T)
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 한국교통연구원 · [View-T](https://viewt.ktdb.go.kr/cong/map/second_map.do) |
+| 형태·규모 | 엑셀 3종(링크별 교통량·AADT, 혼잡빈도·혼잡시간, 시간대별 평균속도), 3.4MB |
+| 선정 이유 | 시간대별 혼잡 패턴은 속도의 가장 직접적인 설명 변수다. SHAP 기준 시간대별 평균속도(View-T)가 이웃 도로 속도 다음으로 중요했다(7.2%) |
+| 사용처 | `pipeline/04` `traffic_volume_aadt`, `annual_avg_speed`, `evening_peak_speed`, `avg_speed_h0~23`, `congest_freq`, `congest_time` → `pipeline/05` 시간대 교통량·AADT 대비 비율 → 속도 모델 변수 |
+| 전처리 | 조사 대상이 일부 링크(약 28%)뿐이라 약 60.7%가 결측이다. 미조사를 뜻하므로 0으로 채우지 않고 결측을 유지해 XGBoost가 결측 분기를 학습하게 했다 |
+| 저장 경로 | `raw/traffic/traffic_volume.xlsx`, `AverageSpeed(LINK).xlsx`, `CongestIndex(LINK).xlsx` |
+
+#### A8. 생활인구(속도 모델용)
+
+C1과 같은 자료를 속도 모델에도 쓴다. `pipeline/05`에서 링크가 속한 250m 격자의 생활인구(`grid_pop`)와 행정동 생활인구(`dong_pop`)를 시간대별로 붙여, 보행자·차량 활동량을 나타내는 변수로 사용한다.
+
+### B. 수송·운행
+
+#### B1. 서울시 버스노선별 정류소 정보
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 서울특별시 · [서울 열린데이터광장 OA-1095](https://data.seoul.go.kr/dataList/OA-1095/L/1/datasetView.do) |
+| 형태·규모 | 엑셀(2026.9.2 기준), 3.2MB |
+| 주요 항목 | `ROUTE_ID`, 노선명, 순번, `NODE_ID`, `ARS_ID`, 정류소명, X·Y 좌표 |
+| 선정 이유 | 노선별 정류장 순서는 '승차 − 하차'를 누적해 구간별 승객을 구하는 데 필수다. 정류장 좌표는 고령 인구·대체수단 평가의 기준점이다 |
+| 사용처 | `transit/route_data` 캐시 → `transit/01` 정류장 배치·구간 길이 → `transit/05` 구간 승객 누적 → `transit/02`·`09`·`11` 정류장 반경 인구·보행 접근성 |
+| 저장 경로 | `raw/traffic/서울시버스노선별정류소정보(20260902).xlsx` |
+
+#### B2. 버스 노선 실제 경로(getRoutePath)
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 서울특별시 · [서울 버스정보시스템 API](http://ws.bus.go.kr/api/rest/busRouteInfo/getRoutePath) |
+| 형태·규모 | 노선별 경로 좌표열(`ROUTE_ID`, 순번, `gpsX`, `gpsY`), 4.0MB |
+| 선정 이유 | 정류장을 직선으로 이으면 골목·언덕의 실제 주행 거리와 경사를 놓친다. 실제 경로를 도로망에 올려야 같은 길에서 버스와 승용차를 비교할 수 있다 |
+| 사용처 | `transit/00` 수집(API 키는 환경변수 `SEOUL_BUS_API_KEY`) → `transit/01` 20m 간격 맵매칭 → 노선 길이, 링크별 속도·경사 |
+| 저장 경로 | `raw/traffic/bus_route_path/route_paths.csv` |
+
+#### B3. 정류장별 시간대별 승하차 인원
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 서울특별시 · [서울 열린데이터광장 OA-12913](https://data.seoul.go.kr/dataList/OA-12913/F/1/datasetView.do) |
+| 형태·규모 | 2026년 7월 월합계(노선·정류장·시간대별 승차·하차), 16MB |
+| 선정 이유 | 교통카드 기반의 전수 승하차로, 노선별 수요와 시간대 분포를 표본조사 없이 얻을 수 있다. '서울마을버스' 공식 분류로 분석 대상 노선을 선정하는 근거이기도 하다 |
+| 사용처 | `transit/route_kinds` 마을버스 선정 → `transit/02` 정류장·노선별 하루 승차 → `transit/05` 구간 승객 누적·승객·km → `transit/07` 시간대 재차인원 |
+| 전처리 | 월합계 ÷ 31일로 하루 평균. 하차 태그 누락은 노선 하차 합계를 승차 합계에 맞추는 비례 보정. 큰·작은 순환으로 나뉜 노선은 정류장별 운행횟수 비율로 승하차 배분 |
+| 저장 경로 | `raw/traffic/2026년_버스노선별_정류장별_시간대별_승하차_인원_정보(07월).csv` |
+
+#### B4. 노선별 정류장별 운행횟수
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 서울특별시 TOPIS · [서울 열린데이터광장 OA-21220](https://data.seoul.go.kr/dataList/OA-21220/S/1/datasetView.do) |
+| 형태·규모 | 주별 CSV 4개(2026.7.6~8.2, 날짜·노선·정류장·시간대별 운행횟수), 359MB |
+| 선정 이유 | 재차인원(승객·km ÷ 차량·km)의 분모인 차량·km를 계산하려면 실제 운행횟수가 필요하다. 배차 계획이 아닌 실적 자료다 |
+| 사용처 | `transit/route_data` 노선별 하루 운행횟수 → `transit/05` 차량·km, 재차인원 → `transit/07` 시간대 운행 비중·운행비 |
+| 전처리 | 7월 6~31일만 사용. 회차·출입고 기록의 영향을 줄이려고 날짜마다 정류장별 운행횟수의 중앙값을 취한 뒤 기간 평균 |
+| 저장 경로 | `raw/traffic/bus_trips/tpss_sta_route_hturn_*.csv` |
+
+#### B5. 노선유형별 시간대 버스 통행속도
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 서울특별시 · [서울 버스정보시스템](https://bus.go.kr/) |
+| 형태·규모 | 노선유형·시간대별 평균속도·운행거리·운행시간(2026.10.6~8), 28KB |
+| 선정 이유 | 노선별 버스 속도 자료가 공개되지 않아, 마을버스 전체의 실측 속도로 분석 속도(관측 + AI)를 외부 점검한다 |
+| 사용처 | `transit/10` 시간대별 실측 마을버스 속도와 분석 속도 비교 |
+| 저장 경로 | `raw/traffic/통행속도 노선 통계.csv` |
+
+### C. 고령자·대체수단
+
+#### C1. 서울 생활인구(250m 격자·행정동)
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 서울특별시·KT · [서울 열린데이터광장 생활인구](https://data.seoul.go.kr/dataVisual/seoul/seoulLivingPopulation.do) |
+| 형태·규모 | 일별 CSV(2026.7.7~20, 14일). 250m 격자 782MB, 행정동 41MB. 격자 도형 2.9MB |
+| 주요 항목 | 일자, 시간, 행정동코드, 250M격자, 총생활인구, 성·연령대별 인구(65~69세, 70세 이상 포함) |
+| 선정 이유 | 주민등록 인구와 달리 **그 시간에 실제로 머무는 인구**다. 마을버스를 이용하는 평일 낮의 고령 인구를 정류장 주변에서 추정할 수 있다 |
+| 사용처 | `transit/02` 정류장 300m 내 평일 낮(10~16시) 격자 인구 × 행정동 65세 이상 비율 → 노선별 고령 생활인구·고령 비율 / 평일 새벽(3~4시) 행정동 인구 → 주민 1,000명당 승용차의 분모 / `transit/11` 격자별 고령 인구의 접근시간 증가 |
+| 저장 경로 | `raw/traffic/250_LOCAL_RESD_202607/`, `250_LOCAL_RESD_ADMDONG_202607/`, `match/match.shp` |
+
+#### C2. 서울시 역사마스터 정보
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 서울특별시 · [서울 열린데이터광장 OA-21232](https://data.seoul.go.kr/dataList/OA-21232/S/1/datasetView.do) |
+| 형태·규모 | 역사 ID, 역사명, 호선, 위도·경도, 40KB |
+| 선정 이유 | 마을버스를 대신할 수 있는 대중교통이 가까이 있는지를 판정한다 |
+| 사용처 | `transit/01` 정류장별 최근접 지하철역 거리 → `transit/02` 대체수단 없는 정류장(지하철역 500m 밖이면서 일반버스 정류장 200m 안 없음)의 승차 비중 → 의존도 점수 / `transit/09` 도로망 거리로 다시 판정한 민감도 |
+| 기준 근거 | 역세권 500m: 서울특별시 역세권 장기전세주택 건립 운영기준, 도시재정비 촉진을 위한 특별법 시행령. 일반버스 200m: 공식 기준이 없어 고령자 보행 약 3분으로 설정하고 150·300m 민감도 검토 |
+| 저장 경로 | `raw/traffic/서울시 역사마스터 정보.csv` |
+
+### D. 차량 구성
+
+#### D1. 연료별 자동차 등록 현황(자치구·행정동)
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 서울특별시 · [OA-15640](https://data.seoul.go.kr/dataList/OA-15640/F/1/datasetView.do)(자치구·연료별), [OA-21236](https://data.seoul.go.kr/dataList/OA-21236/F/1/datasetView.do)(행정동·연료별) |
+| 형태·규모 | 2026년 7월, 각각 36KB·556KB |
+| 선정 이유 | 승용차 탄소를 가상의 단일 차종이 아니라 **서울의 실제 연료 구성**(휘발유 57.4%, 경유 20.1%, 하이브리드 12.7%, LPG 6.0%, 전기·수소 3.9%)으로 계산하기 위해서다. 행정동 자료는 동네별 승용차 보유 수준을 보여준다 |
+| 사용처 | `transit/05` 승용차 연료 구성 가중 / `transit/02` 행정동 자가용 승용차 ÷ 새벽 생활인구 → 노선 주변 주민 1,000명당 승용차 → `transit/07` 증편 검토 후보 선정 |
+| 저장 경로 | `raw/traffic/vehicle_registration/seoul_fuel_registration_202607.csv`, `raw/traffic/서울시 자치구 읍면동별 연료별 자동차 등록현황(행정동)(26년7월).csv` |
+
+#### D2. 서울시 마을버스 운행·연료별 현황
+
+| 항목 | 내용 |
+| --- | --- |
+| 제공 | 서울특별시 · [서울시 교통 누리집](https://news.seoul.go.kr/traffic/archives/300) |
+| 내용 | 2026년 1월 마을버스 연료별 대수(CNG 885, 경유 344, 전기 397대), 1대 하루 재정지원 기준액(510,457원), 1대 하루 운행횟수(약 17.8회 = 월 운행 831,798회 ÷ 31일 ÷ 1,511대) |
+| 선정 이유 | 마을버스 탄소를 실제 연료 구성으로 가중하고, 운행 1회 원가(약 2.9만 원)를 근사하기 위해서다 |
+| 사용처 | `transit/05` `BUS_FLEET` 상수(버스 연료 가중) / `transit/07` 운행비 충당 범위(승차당 실수입 600·900·1,200원) |
+
+### 참고: 문헌 기반 계수
+
+데이터 파일은 아니지만 계산에 쓴 외부 계수는 다음과 같다. 출처는 [보고서](../docs/report/maeul_bus_report.md) 참고문헌에 있다.
+
+| 계수 | 값 | 사용처 |
 | --- | --- | --- |
-| `raw/traffic/서울시버스노선별정류소정보(20260902).xlsx` | 노선별 정류장 순서·좌표 | [서울 열린데이터광장 OA-1095](https://data.seoul.go.kr/dataList/OA-1095/L/1/datasetView.do) |
-| `raw/traffic/bus_route_path/route_paths.csv` | 노선 실제 경로 좌표 | 서울시 버스운행정보 API getRoutePath(`src/transit/00`, 키는 환경변수 `SEOUL_BUS_API_KEY`) |
-| `raw/traffic/2026년_버스노선별_정류장별_시간대별_승하차_인원_정보(07월).csv` | 정류장별 시간대별 승하차 | [서울 열린데이터광장 OA-12913](https://data.seoul.go.kr/dataList/OA-12913/F/1/datasetView.do) |
-| `raw/traffic/bus_trips/tpss_sta_route_hturn_*.csv` | 노선별 정류장별 운행횟수(2026년 7월) | [서울 열린데이터광장 OA-21220](https://data.seoul.go.kr/dataList/OA-21220/S/1/datasetView.do) |
-| `raw/traffic/서울시 역사마스터 정보.csv` | 지하철역 좌표 | [서울 열린데이터광장 OA-21232](https://data.seoul.go.kr/dataList/OA-21232/S/1/datasetView.do) |
-| `raw/traffic/vehicle_registration/seoul_fuel_registration_202607.csv` | 서울 연료별 자동차 등록(2026년 7월) | [서울 열린데이터광장 OA-15640](https://data.seoul.go.kr/dataList/OA-15640/F/1/datasetView.do) |
-| `raw/traffic/서울시 자치구 읍면동별 연료별 자동차 등록현황(행정동)(26년7월).csv` | 행정동별 연료별 자동차 등록 | [서울 열린데이터광장 OA-21236](https://data.seoul.go.kr/dataList/OA-21236/F/1/datasetView.do) |
-| `raw/traffic/통행속도 노선 통계.csv` | 노선유형별 시간대 버스 통행속도(2026.10.6~8) | [서울 버스정보시스템](https://bus.go.kr/) |
+| 전력 배출계수 | 0.4173kgCO₂/kWh(2023년도, 2025.12 공표) | 전기차·전기버스 배출 |
+| 경유·CNG 버스 대 전기버스 비율 | 서울 동일 노선 실측: 전기 1.43kWh/km 대비 경유 723g, CNG 721gCO₂/km | `src/energy/bus_fuel.py` |
+| 승용차 탑승인원 | 1.2명(민감도 1.35·1.82명) | 승용차 승객·km당 배출 |
+| 차량 공인 연비·전비 | 쏘나타 2.0·LPi·하이브리드, 쏘렌토 2.2 디젤, 아이오닉5, 카운티 일렉트릭 | 에너지 모델 보정 |
 
-마을버스 연료별 대수(2026년 1월)와 재정지원 기준액은 [서울시 교통 누리집](https://news.seoul.go.kr/traffic/archives/300) 자료를 코드 상수로 넣었다(`src/transit/05`, `07`).
+## 4. 데이터 결합 구조
 
-## 2. 중간·분석 산출물
+| 결합 키 | 결합 대상 | 방법 |
+| --- | --- | --- |
+| `LINK_ID` | 표준노드링크 ↔ 5분 통행속도 ↔ View-T·교통량 ↔ 전 링크 예측속도 | 키 일치 |
+| 공간(도로 링크) | 시설·사고다발지역, DEM, 레이더 격자, 250m 격자 | 버퍼 교차·표고 표본화·최근접 격자 |
+| 공간(노선) | 버스 실제 경로 → 표준노드링크 | 20m 간격 점의 진행 방향 일치 링크 매칭 |
+| `ROUTE_ID`·`NODE_ID` | 정류소 ↔ 운행횟수 ↔ 실제 경로 | 키 일치 |
+| 노선명·`NODE_ID` | 정류소 ↔ 승하차 | 노선명 표기 정리(`route_kinds.ridership_key`) 후 노선명과 표준 정류장 ID 일치 |
+| 공간(정류장) | 정류장 ↔ 지하철역·일반버스 정류장, 250m 격자 | 최근접 거리, 300m 반경 |
+| 행정동코드 | 생활인구(행정동) ↔ 자동차 등록 ↔ 격자 | 키 일치(격자는 인구가 가장 많은 행정동에 배정) |
+| 시간코드(1~24)·`tm` | 통행속도 ↔ 강수 ↔ 교통량·인구 프로필 ↔ 승하차 시간대 | 시간 일치 |
 
-| 경로 | 만드는 곳 | 내용 |
+## 5. 기간 정합성
+
+| 데이터 | 기간 | 분석에서의 처리 |
+| --- | --- | --- |
+| 통행속도, 레이더 강수, 생활인구 | 2026.7.7~20 | 공통 기간(레이더가 없는 7월 7일 0시 제외, 335개 시점). 노선 속도는 평일 시간대 평균 |
+| 승하차, 자동차 등록 | 2026년 7월 | 승하차는 31일로 나눠 하루 평균 |
+| 운행횟수 | 2026.7.6~31 | 승하차와 같은 7월 |
+| 정류소 정보 | 2026.9.2 | 7월과 정류장 순서가 다를 수 있어, 평균 승차거리 0.5km 미만인 17개 노선을 누적 이상으로 제외 |
+| 노선유형별 버스 속도 | 2026.10.6~8 | 외부 점검 용도로만 사용(시기 차이를 한계로 명시) |
+| 교통량·View-T | 2024년 평일 기준 | 시간대 패턴 변수로만 사용 |
+| 보행자 사고다발지역 | 2019~2024 | 누적 다발지역으로 사용 |
+| 마을버스 연료 현황 | 2026년 1월 | 차량 구성 가중 |
+
+## 6. 품질 관리 원칙
+
+- **결측과 0의 구분**: 시설 개수는 '없음'이 명확하므로 0으로, 교통량·View-T는 '미조사'이므로 결측으로 둔다.
+- **표본 수 보존**: 5분 관측의 시간당 표본 수를 학습 가중치로 쓴다.
+- **이상치 처리**: 경사는 원값과 보정값(±12%)을 함께 보존한다. 승객 누적이 불가능한 노선(평균 승차거리 0.5km 미만 17개)은 분석에서 제외하고 사유를 기록한다.
+- **누수 방지**: 속도 모델 검증 시 이웃속도 조회표를 학습 도로로만 다시 만든다([SPEED_MODEL.md](../docs/SPEED_MODEL.md)).
+- **인증정보**: API 키는 환경변수로만 읽고 파일·코드·커밋에 남기지 않는다.
+- **개인정보**: 모든 자료는 집계된 공개 자료이며 개인을 식별할 수 있는 정보는 쓰지 않는다.
+
+## 7. 저장 구조와 산출물
+
+```text
+data/
+├── raw/          내려받은 원본(수정하지 않음)
+│   ├── road/  boundary/  dem/  weather/{grid,radar}/
+│   └── traffic/  (속도·시설·교통·인구·버스·차량 자료)
+├── interim/      파이프라인 중간 결과(코드로 재생성)
+└── processed/    모델·분석이 읽는 산출물(코드로 재생성)
+    └── transit/  마을버스 분석 결과
+```
+
+| 산출물 | 만드는 곳 | 내용 |
 | --- | --- | --- |
 | `interim/seoul_link.shp`, `seoul_link_attr.csv` | `pipeline/01` | 서울 링크 63,548개 |
 | `interim/seoul_link_speed_5min_hourly.csv` | `pipeline/02` | 링크×날짜×시간 관측속도와 표본 수 |
-| `processed/seoul_link_dimension.csv` | `pipeline/04` | 링크 차원 표(도로·경사·위상·시설·교통·인구) |
+| `processed/seoul_link_dimension.csv` | `pipeline/04` | 링크 차원 표(88개 열) |
 | `processed/seoul_link_speed_fact.csv` | `pipeline/05` | 관측속도 팩트(15,094,335행) |
 | `processed/model_a_lookup.parquet` | `models/01` | Model A 조회표(Git 포함) |
 | `processed/neighbor_speed_lookup.parquet` | `models/02` | 이웃속도 조회표(Git 포함) |
 | `processed/all_link_speed_prediction_{tm}.csv` | `models/04` | 시점별 전 링크 속도(335개) |
-| `processed/transit/` | `transit/01~11` | 마을버스 분석 결과([docs/TRANSIT_MAEUL_BUS.md](../docs/TRANSIT_MAEUL_BUS.md)) |
-
-학습된 B·C 모델(`src/models/artifacts/model_nb.pkl`, `model_stat.pkl`)도 Git에 포함되어 있어, 원자료 없이도 저장된 모델로 예측 단계를 실행할 수 있다.
+| `processed/transit/*.csv` | `transit/01~11` | 노선·정류장·탄소·유형·시나리오·접근성 결과([단계별 산출물](../docs/TRANSIT_MAEUL_BUS.md#단계별-역할)) |
