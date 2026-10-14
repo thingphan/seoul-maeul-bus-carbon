@@ -1,3 +1,5 @@
+"""차량 에너지·배출 모델 단위 테스트: 손계산 일치, 경사·정체 방향성, 공인 연비·전비 재현, 서울 실측 비율 재현."""
+
 from __future__ import annotations
 
 import unittest
@@ -12,7 +14,7 @@ from src.energy.link_energy import DEFAULT_PARAMETERS, calculate_link_energy, ro
 
 
 class LinkEnergyTests(unittest.TestCase):
-    def test_flat_link_matches_pdf_formula(self):
+    def test_flat_link_matches_hand_calculation(self):
         # 1 km, 36 km/h(=10 m/s), 평지의 손계산 가능한 기준 사례.
         frame = pd.DataFrame({"LINK_ID": ["flat"], "LENGTH": [1000.0], "speed_kmh": [36.0], "slope_pct": [0.0]})
         row = calculate_link_energy(frame).iloc[0]

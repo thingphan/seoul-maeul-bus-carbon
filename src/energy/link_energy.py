@@ -1,8 +1,11 @@
-"""에코라우팅 PDF의 링크 단위 VT-CPEM 근사식을 구현한다.
+"""전기차 에너지 모델 VT-CPEM(Fiori et al. 2016)의 링크 단위 근사식을 구현한다.
+
+    E = [max(F_구름 + F_경사 + F_공기, 0) · u / η + P_보조] · Δt
+    F_구름 = m·g·Crr(u)·cos θ,  F_경사 = m·g·sin θ,  F_공기 = ½·ρ·Cd·A·u²,  Δt = 링크 길이 / u
 
 가정
 ----
-* 링크를 지나는 동안 예측 평균속도는 일정하다 (가속도 a=0).
+* 링크를 지나는 동안 평균속도는 일정하다(가속도 0). 정지·출발 소비는 ev_calibration의 부가 전력으로 보정한다.
 * 회생제동은 적용하지 않는다. 내리막에서 바퀴 동력이 음수여도 추진 동력은 0으로
   제한하고, 보조장치 전력은 계속 소비한다.
 * DEM 기반 원시 경사도는 짧은 링크에서 과대해질 수 있어 [-12%, +12%]로 제한한다.
@@ -18,7 +21,7 @@ import pandas as pd
 
 @dataclass(frozen=True)
 class VTCPEMParameters:
-    """에코라우팅.pdf 9쪽의 기준 차량 및 물리 상수."""
+    """VT-CPEM 원 논문의 기준 차량(닛산 리프) 상수. 버스·승용차는 ev_calibration에서 차종별로 바꿔 쓴다."""
 
     mass_kg: float = 1521.0
     drag_coefficient: float = 0.28
@@ -64,10 +67,7 @@ def calculate_link_energy(
     frame: pd.DataFrame,
     parameters: VTCPEMParameters = DEFAULT_PARAMETERS,
 ) -> pd.DataFrame:
-    """링크별 속도·길이·경사에서 VT-CPEM 에너지 비용을 벡터 계산한다.
-
-    반환값의 ``energy_ev_j``가 경로 탐색용 링크 가중치다.
-    """
+    """링크별 속도·길이·경사에서 VT-CPEM 에너지(energy_ev_wh 등)와 중간 항을 벡터 계산한다."""
     validate_energy_inputs(frame)
     result = frame.copy()
 
@@ -113,15 +113,3 @@ def calculate_link_energy(
     result["energy_ev_kwh"] = energy_ev_j / 3_600_000.0
     result["energy_wh_per_km"] = energy_ev_wh / (length_m / 1000.0)
     return result
-
-
-def energy_output_columns(frame: pd.DataFrame) -> list[str]:
-    """경로 탐색과 감사에 필요한 열만 남긴다."""
-    preferred = [
-        "tm", "LINK_ID", "F_NODE", "T_NODE", "LENGTH", "ROAD_NAME", "speed_kmh", "speed_m_s",
-        "travel_time_sec", "slope_pct_raw", "slope_pct_used", "slope_outlier_flag", "precip_mm",
-        "tier", "speed_source", "prediction_confidence", "crr", "rolling_force_n", "grade_force_n",
-        "aero_force_n", "wheel_power_w", "traction_battery_power_w", "battery_power_w", "energy_ev_j",
-        "energy_ev_wh", "energy_ev_kwh", "energy_wh_per_km",
-    ]
-    return [column for column in preferred if column in frame.columns]
