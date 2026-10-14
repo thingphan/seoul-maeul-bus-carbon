@@ -1,0 +1,59 @@
+# Python cache/build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments and local config
+.venv/
+venv/
+env/
+.env
+.envrc
+
+# Local tool caches
+.matplotlib/
+.ipynb_checkpoints/
+catboost_info/
+
+# API keys: 환경변수(SEOUL_BUS_API_KEY, KMA_API_KEY)로만 읽는다. 키 파일은 절대 커밋하지 않는다.
+*api_key*.txt
+*.key
+
+# 공유·전달용 묶음(인증정보가 들어 있을 수 있음)
+_share*/
+*.zip
+
+# 원자료·중간 산출물·분석 산출물은 크고 코드로 재생성되므로 제외한다.
+# 폴더 구조가 보이도록 .gitkeep만 남긴다.
+data/raw/**
+!data/raw/**/
+!data/raw/**/.gitkeep
+data/interim/**
+!data/interim/**/
+!data/interim/**/.gitkeep
+data/processed/**
+!data/processed/**/
+!data/processed/**/.gitkeep
+
+# 예외: Model A·이웃속도 조회표는 clone 직후 속도 예측을 바로 실행할 수 있도록 커밋한다.
+!data/processed/model_a_lookup.parquet
+!data/processed/neighbor_speed_lookup.parquet
+
+# 예외: 학습된 B·C 모델(최종본)만 커밋한다. src/models/02_build_model_bc.py로 재현 가능하다.
+src/models/artifacts/**
+!src/models/artifacts/**/
+!src/models/artifacts/**/.gitkeep
+!src/models/artifacts/model_nb.pkl
+!src/models/artifacts/model_stat.pkl
+
+# OS / editor
+.DS_Store
+Thumbs.db
+tempCodeRunnerFile.py

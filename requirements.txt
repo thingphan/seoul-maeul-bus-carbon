@@ -1,0 +1,27 @@
+# Python 3.13에서 검증한 버전이다.
+
+# 데이터 처리
+numpy==2.4.6
+pandas==3.0.3
+pyarrow==24.0.0
+polars==2.0.0
+openpyxl==3.1.5
+
+# 공간 분석
+geopandas==1.1.4
+shapely==2.1.2
+pyproj==3.7.2
+pyogrio==0.13.0
+rasterio==1.5.0
+scipy==1.17.1
+
+# 속도 예측 모델
+scikit-learn==1.9.0
+xgboost==3.2.0
+
+# 그림
+matplotlib==3.10.9
+
+# 모델 비교 노트북(notebooks/)에서만 사용
+lightgbm==4.6.0
+catboost==1.2.10

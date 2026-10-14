@@ -1,0 +1,17 @@
+# Normalize all text files to LF in the repo and on checkout, regardless of
+# the developer's local core.autocrlf setting. Without this, core.autocrlf=true
+# on Windows makes Git flag files like .gitkeep as "modified" even when the
+# working tree and the committed blob are byte-identical.
+* text=auto eol=lf
+
+# Binary assets: never touch line endings.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.shp binary
+*.shx binary
+*.dbf binary
+*.prj binary
+*.cpg binary
+*.img binary
+*.npz binary
