@@ -20,6 +20,7 @@ CLI 환경에서 KMA 시각(YYYYMMDDHHMM)을 파라미터로 전달하여 단독
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import re
 from pathlib import Path
 
@@ -40,6 +41,7 @@ DEM_PATH = INTERIM_DATA_DIR / "seoul_link_dem_features.csv"
 GRID_CACHE_PATH = INTERIM_DATA_DIR / "weather_hsr_seoul_grid.npz"
 ALL_LINK_GRID_MAP_PATH = INTERIM_DATA_DIR / "all_link_radar_grid_mapping.csv"
 RADAR_DIR = RAW_DATA_DIR / "weather" / "radar"
+SPEED_FACT_SCRIPT = PROJECT_ROOT / "src" / "pipeline" / "05_build_speed_fact.py"
 
 
 def parse_args() -> argparse.Namespace:
@@ -107,7 +109,11 @@ def load_or_build_grid_mapping() -> pl.DataFrame:
 
     print("격자 매핑 테이블을 생성합니다. (최초 1회)")
     if not GRID_CACHE_PATH.exists():
-        raise SystemExit(f"서울 레이더 격자 캐시가 없습니다: {GRID_CACHE_PATH}")
+        # 격자 캐시는 pipeline/05가 원본 격자(data/raw/weather/grid/hsr_lon·lat.txt)에서 만든다. 같은 함수를 재사용한다.
+        spec = importlib.util.spec_from_file_location("speed_fact", SPEED_FACT_SCRIPT)
+        speed_fact = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(speed_fact)
+        speed_fact.load_or_build_seoul_grid()
 
     grid = np.load(GRID_CACHE_PATH)
     radar_points = np.column_stack([grid["lat"], grid["lon"]])
