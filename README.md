@@ -78,7 +78,8 @@ python src/transit/checks/cluster_check.py           # 군집분석 점검
 학습된 모델과 조회표가 저장소에 있으므로 재학습 없이 예측할 수 있다.
 
 ```powershell
-python src/models/03_predict_all_link_speed.py --tm 202607160800                       # 한 시점
+python src/models/weather_snapshot.py --tm 202607160800                                # 한 시점: 링크별 레이더 강수
+python src/models/03_predict_all_link_speed.py --tm 202607160800                       # 한 시점: 전 링크 속도
 python src/models/04_batch_predict_all_link_speed.py --start-date 20260707 --end-date 20260720   # 기간 전체
 ```
 

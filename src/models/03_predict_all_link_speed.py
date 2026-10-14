@@ -15,7 +15,7 @@
     python src/models/03_predict_all_link_speed.py --tm 202607160800
     python src/models/03_predict_all_link_speed.py --tm 202607160800 --precip-mm 0
 
-첫 번째 예시는 data/processed/seoul_all_link_weather_202607160800.csv의 링크별
+첫 번째 예시는 src/models/weather_snapshot.py가 만든 data/processed/weather_snapshot/weather_snapshot_202607160800.csv의 링크별
 레이더 강수량을 사용한다. 두 번째 예시는 모든 링크에 동일한 시나리오 강수량을
 적용한다.
 """
@@ -105,11 +105,11 @@ def load_weather(args: argparse.Namespace, link_ids: pd.Series) -> pd.DataFrame:
             raise SystemExit("--precip-mm은 0 이상이어야 합니다.")
         return pd.DataFrame({"LINK_ID": link_ids, "precip_mm": np.float32(args.precip_mm)})
 
-    path = args.weather_file or PROCESSED / f"seoul_all_link_weather_{args.tm}.csv"
+    path = args.weather_file or PROCESSED / "weather_snapshot" / f"weather_snapshot_{args.tm}.csv"
     if not path.exists():
         raise SystemExit(
             f"링크별 강수 파일이 없습니다: {path}\n"
-            "레이더 스냅샷을 만들거나, 강수 시나리오라면 --precip-mm 0처럼 지정하세요."
+            "python src/models/weather_snapshot.py --tm <시각>으로 레이더 스냅샷을 만들거나, 강수 시나리오라면 --precip-mm 0처럼 지정하세요."
         )
     weather = pd.read_csv(path, usecols=["LINK_ID", "precip_mm"], dtype={"LINK_ID": str}, encoding="utf-8-sig")
     weather["precip_mm"] = pd.to_numeric(weather["precip_mm"], errors="coerce")
