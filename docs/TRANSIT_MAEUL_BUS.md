@@ -25,10 +25,9 @@ python src/transit/04_build_route_energy.py
 python src/transit/05_build_route_carbon_breakeven.py
 python src/transit/06_classify_route_priority.py
 python src/transit/07_build_route_operations.py
-python src/transit/08_route_typology.py
-python src/transit/09_access_gap.py
-python src/transit/10_validate_ai_speed.py
-python src/transit/11_route_removal_access.py
+python src/transit/08_access_gap.py
+python src/transit/09_validate_ai_speed.py
+python src/transit/10_route_removal_access.py
 
 # 보고서 수치 재현과 강건성 점검
 python src/transit/checks/report_numbers.py
@@ -40,7 +39,7 @@ python src/transit/checks/cluster_check.py
 python src/transit/report_figures.py --font-dir <Pretendard 폴더>
 ```
 
-- 결과는 `data/processed/transit/`에 저장된다. 캐시가 있으면 01~11 전체가 약 2~3분 걸린다.
+- 결과는 `data/processed/transit/`에 저장된다. 캐시가 있으면 01~10 전체가 약 2~3분 걸린다.
 - **00(노선 실제 경로 수집)**은 `data/raw/traffic/bus_route_path/route_paths.csv`가 있으면 실행하지 않아도 된다. 다시 받으려면 서울시 버스운행정보 API 인증키를 환경변수로만 넣는다(코드·문서에 적지 않는다).
 
   ```powershell
@@ -72,10 +71,9 @@ python src/transit/report_figures.py --font-dir <Pretendard 폴더>
 | 05 | `05_build_route_carbon_breakeven.py` | 구간 승객 누적 → 승객·km, 운행횟수 → 재차인원, 버스·승용차 승객 1명당 탄소, 손익분기, 증편 손익분기 | `route_carbon_breakeven.csv` |
 | 06 | `06_classify_route_priority.py` | 탄소 효율 × 교통약자 의존도 네 유형, 15인승급 소형 전기차 시나리오 | `route_priority.csv` |
 | 07 | `07_build_route_operations.py` | 시간대별 재차인원, 재차인원 3명 미만 시간대 소형화 감축, 운행비 충당 범위(승차당 실수입 600·900·1,200원), 증편 검토 후보 | `route_hourly_load.csv`, `route_operations.csv` |
-| 08 | `08_route_typology.py` | 변수 10개 K-평균 군집과 네 유형의 일치도(참고용) | `route_typology.csv`, `typology_profile.csv` |
-| 09 | `09_access_gap.py` | 정류장까지 고령자 보행 시간(Tobler × 0.75, 도로망·직선 간이), 도로망 거리로 본 대체수단과 유형 민감도 | `grid_walk_access.csv`, `stop_network_access.csv`, `route_class_network.csv` |
-| 10 | `10_validate_ai_speed.py` | 분석 속도와 TOPIS 마을버스 실측 시간대 속도 비교 | `ai_speed_validation.csv` |
-| 11 | `11_route_removal_access.py` | 노선을 하나씩 제거할 때 고령자 접근시간 증가(다중 출발 Dijkstra, 도로망·직선 간이) | `route_removal_access.csv`, `route_removal_cells.csv` |
+| 08 | `08_access_gap.py` | 정류장까지 고령자 보행 시간(Tobler × 0.75, 도로망·직선 간이), 도로망 거리로 본 대체수단과 유형 민감도 | `grid_walk_access.csv`, `stop_network_access.csv`, `route_class_network.csv` |
+| 09 | `09_validate_ai_speed.py` | 분석 속도와 TOPIS 마을버스 실측 시간대 속도 비교 | `ai_speed_validation.csv` |
+| 10 | `10_route_removal_access.py` | 노선을 하나씩 제거할 때 고령자 접근시간 증가(다중 출발 Dijkstra, 도로망·직선 간이) | `route_removal_access.csv`, `route_removal_cells.csv` |
 
 공통 모듈: `route_data.py`(캐시와 공통 입력), `route_classes.py`(네 유형 규칙), `road_network.py`(도로망·최단 거리·고령자 보행 시간), `route_kinds.py`(노선 종류 구분: 승하차 데이터의 공식 분류 '서울마을버스'로 선정, 큰·작은 순환으로 나뉜 노선은 정류장별 운행횟수 비율로 승하차 배분).
 

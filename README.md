@@ -10,6 +10,7 @@
 | [데이터 명세](data/README.md) | 공공데이터 23종의 선정 이유, 사용처, 전처리, 결합 구조 |
 | [AI 속도 모델](docs/SPEED_MODEL.md) | 관측 공백 도로의 속도 추정: 데이터, 모델, 검증 |
 | [마을버스 분석](docs/TRANSIT_MAEUL_BUS.md) | 분석 단계별 방법, 차량 에너지 모델, 결과, 한계 |
+| [모델 개발 노트북](notebooks/README.md) | 속도 모델의 기준모형·변수·계층 비교 실험 기록 |
 | [재현 방법](#10-재현-방법) | 설치와 실행 순서 |
 
 ## 목차
@@ -153,8 +154,8 @@ seoul-maeul-bus-carbon/
 │   ├── pipeline/      01~05 도로 속도 데이터 구축(서울 링크, 5분 속도 집계, 레이더 강수, 링크 차원 표, 관측속도 팩트)
 │   ├── models/        01~04 AI 속도 모델(A 조회표, B·C XGBoost 학습·검증·예측), weather_snapshot, artifacts/
 │   ├── energy/        차량별 에너지·배출 모델(VT-CPEM, VT-CPFM 계열, HEV, 경유·CNG 버스 환산)
-│   └── transit/       00~11 마을버스 분석, checks/ 수치 재현·강건성 검증, report_figures 보고서 그림
-├── notebooks/         속도 모델 기준모형 비교, 변수 실험, Model A 시간 분할 검증, B/C 분리 평가
+│   └── transit/       00~10 마을버스 분석, checks/ 수치 재현·강건성 검증, report_figures 보고서 그림
+├── notebooks/         속도 모델 개발 실험 기록(README.md에 노트북별 요약)
 ├── tests/             에너지 모델 단위 테스트
 ├── docs/              SPEED_MODEL.md, TRANSIT_MAEUL_BUS.md, report/(보고서와 그림)
 ├── data/              README.md(데이터 명세), raw·interim·processed 폴더 구조
@@ -180,10 +181,9 @@ python src/transit/04_build_route_energy.py
 python src/transit/05_build_route_carbon_breakeven.py
 python src/transit/06_classify_route_priority.py
 python src/transit/07_build_route_operations.py
-python src/transit/08_route_typology.py
-python src/transit/09_access_gap.py
-python src/transit/10_validate_ai_speed.py
-python src/transit/11_route_removal_access.py
+python src/transit/08_access_gap.py
+python src/transit/09_validate_ai_speed.py
+python src/transit/10_route_removal_access.py
 
 python src/transit/checks/report_numbers.py          # 보고서 수치 재현
 python src/transit/checks/assumption_sensitivity.py  # 가정 민감도

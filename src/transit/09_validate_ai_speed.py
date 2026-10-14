@@ -18,7 +18,7 @@
 출력
   data/processed/transit/ai_speed_validation.csv  시간대별 실측·모델 속도
 
-사용: python src/transit/10_validate_ai_speed.py
+사용: python src/transit/09_validate_ai_speed.py
 """
 
 from __future__ import annotations

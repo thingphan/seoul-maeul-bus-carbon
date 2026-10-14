@@ -14,9 +14,9 @@
   3. 적자 추정: 1회 운행 원가 = 1대당 하루 재정지원 기준액(2026년 510,457원) ÷ 1대당 하루 운행횟수
      (2026년 1월 서울 마을버스 월 831,798회 ÷ 31일 ÷ 운행 1,511대). 운송수입 = 하루 승차 × 승객
      1명당 실수입. 환승 정산으로 실수입이 노선마다 달라 600·900·1,200원 세 경우로 범위를 낸다.
-  4. 탄소 목적 증편 후보: 지금도 손님이 많아 탄소 효율이 높은 칸(① 증편·지원 우선, ③ 현행 유지) 가운데
+  4. 탄소 목적 증편 후보: 지금도 손님이 많아 탄소 효율이 높은 유형(① 증편·지원 우선, ③ 현행 유지) 가운데
      노선 주변 승용차 보유가 중앙값 이상(증편 시 승용차 이용자를 끌어올 여지)이고 증편 1회 손익분기 인원이
-     중앙값 이하(적은 전환으로도 본전)인 노선. ②·④ 칸은 손님이 적어 증편보다 차 크기·노선 조정이 먼저다.
+     중앙값 이하(적은 전환으로도 본전)인 노선. ②·④ 유형은 손님이 적어 증편보다 차 크기·노선 조정이 먼저다.
      중앙값은 230개 노선 전체 기준이다.
 
 출력 (data/processed/transit/)
@@ -127,10 +127,10 @@ def main() -> None:
           f"(전부 전기 마을버스일 때 하루 배출 {total_ev:.1f}t 대비), 해당 운행 비중 "
           f"{hourly['low_trips'].sum() / hourly['trips'].sum():.0%}")
     for fare in FARES:
-        print(f"  승객 1명당 실수입 {fare:,}원: 적자 {int(out[f'deficit_at_{fare}'].sum())}/{len(out)}  칸별 적자 비율 "
+        print(f"  승객 1명당 실수입 {fare:,}원: 적자 {int(out[f'deficit_at_{fare}'].sum())}/{len(out)}  유형별 적자 비율 "
               + str(out.groupby("class")[f"deficit_at_{fare}"].mean().round(2).to_dict()))
     cand = out[out["carbon_service_candidate"]].sort_values("added_trip_breakeven_riders")
-    print(f"  탄소 목적 증편 후보 {len(cand)}개(①③ 칸 중 승용차 보유 중앙 이상 & 증편 손익분기 중앙 이하), 칸별 "
+    print(f"  탄소 목적 증편 후보 {len(cand)}개(①③ 유형 중 승용차 보유 중앙 이상 & 증편 손익분기 중앙 이하), 칸별 "
           + str(cand["class"].value_counts().sort_index().to_dict()))
     print(cand[["노선명", "class", "route_cars_per_1000", "added_trip_breakeven_riders", "avg_load"]].head(10)
           .round(1).to_string(index=False))

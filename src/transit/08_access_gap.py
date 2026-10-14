@@ -17,15 +17,15 @@
        각각 평지 가정(경사 0)과 비교해 언덕이 늘리는 몫을 고령 인구 가중으로 낸다.
   2. 대체수단 없는 정류장(마을버스 정류장): 직선 기준(01: 지하철역 500m 밖 & 일반버스 정류장 200m 안 없음)을
      도로망 거리로 다시 판정한다. 기준 거리를 그대로 둔 경우와 ×1.3(직선→도로 환산)한 경우를 함께 낸다.
-  3. 도로망 기준으로 노선의 '대체수단 없는 승차 비중'을 다시 구해 네 칸(route_classes.py)을 다시 나누고,
-     칸이 바뀌는 노선 수를 센다(민감도). 직선 기준으로 다시 계산한 값이 02와 같은지 먼저 확인한다.
+  3. 도로망 기준으로 노선의 '대체수단 없는 승차 비중'을 다시 구해 네 유형(route_classes.py)을 다시 나누고,
+     유형이 바뀌는 노선 수를 센다(민감도). 직선 기준으로 다시 계산한 값이 02와 같은지 먼저 확인한다.
 
 출력 (data/processed/transit/)
   grid_walk_access.csv     격자 1행: 고령 인구, 정류장까지 노인 보행 시간(도로망·간이 × 언덕·평지)
   stop_network_access.csv  정류장 1행: 지하철역·일반버스 정류장까지 도로망 거리, 대체수단 없음 판정 3종
-  route_class_network.csv  노선 1행: 대체수단 없는 승차 비중(직선·도로망), 네 칸(직선·도로망)
+  route_class_network.csv  노선 1행: 대체수단 없는 승차 비중(직선·도로망), 네 유형(직선·도로망)
 
-사용: python src/transit/09_access_gap.py
+사용: python src/transit/08_access_gap.py
 """
 
 from __future__ import annotations
@@ -107,7 +107,7 @@ def main() -> None:
     stops[["NODE_ID", "served_kinds", "dist_to_station_m", "net_station_m", "net_trunk_m", *flag_cols]].to_csv(
         TRANSIT / "stop_network_access.csv", index=False, encoding="utf-8-sig")
 
-    print("[4/4] 도로망 기준으로 네 칸 다시 나누기(민감도)...")
+    print("[4/4] 도로망 기준으로 네 유형 다시 나누기(민감도)...")
     priority = pd.read_csv(TRANSIT / "route_priority.csv", dtype={"ROUTE_ID": str})
     route_ids = set(pd.read_csv(TRANSIT / "routes.csv", dtype={"ROUTE_ID": str})["ROUTE_ID"])
     route_stops = load_route_stops()
@@ -157,7 +157,7 @@ def main() -> None:
     for f in ("no_alt_net", "no_alt_net_scaled"):
         changed = int((out["class_id"] != out[f"class_id_{f}"]).sum())
         print(f"  {f}: 노선 대체수단 없는 승차 비중 중앙 {out['no_alt_boarding_share'].median():.3f} → "
-              f"{out[f'{f}_boarding_share'].median():.3f}, 칸이 바뀐 노선 {changed}/{len(out)}")
+              f"{out[f'{f}_boarding_share'].median():.3f}, 유형이 바뀐 노선 {changed}/{len(out)}")
     print(pd.crosstab(out["class"], out["class_id_no_alt_net"], rownames=["직선 기준"], colnames=["도로망(기준 그대로)"]).to_string())
 
 

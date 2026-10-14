@@ -3,10 +3,10 @@
 1. 승용차 탑승인원: 1.2명(기준) → 1.35명(출근 평균) → 1.5명 → 1.82명(하루 평균)
 2. 배출 배율: 버스 배출 1.28배(서울 마을버스 대형 비중 반영 추정)·1.5배, 승용차 배출 0.8배, 가장 불리한 조합
 3. 대체수단 기준: 일반버스 정류장 150·200(기준)·300m(지하철 500m는 고정)
-4. 대체수단 거리를 직선 대신 도로망 거리로(09 산출물): 유형이 바뀐 노선이 기준선 근처인지
+4. 대체수단 거리를 직선 대신 도로망 거리로(08 산출물): 유형이 바뀐 노선이 기준선 근처인지
 
 입력: data/processed/transit/route_carbon_breakeven.csv(05), route_priority.csv(06), bus_stops.csv·routes.csv(01),
-      route_class_network.csv(09)
+      route_class_network.csv(08)
 사용: python src/transit/checks/assumption_sensitivity.py
 """
 

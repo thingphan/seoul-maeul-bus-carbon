@@ -2,7 +2,7 @@
 
 입력
   data/processed/transit/grid_population_daytime.csv(02), bus_stops.csv(01), route_priority.csv(06),
-  grid_walk_access.csv(09, 격자 주변 평균 경사), 정류소·승하차(route_data.py), 도로망(road_network.py)
+  grid_walk_access.csv(08, 격자 주변 평균 경사), 정류소·승하차(route_data.py), 도로망(road_network.py)
 
 처리
   1. 정류장마다 서는 노선(일반·마을·자율주행 전부)을 모은다. 노선 R을 없애면 R만 서는 정류장이 사라진다.
@@ -21,7 +21,7 @@
   data/processed/transit/route_removal_access.csv  노선 1행
   data/processed/transit/route_removal_cells.csv   노선×격자: 보행 시간이 1분 이상 늘어나는 격자의 증가 시간(분)
 
-사용: python src/transit/11_route_removal_access.py
+사용: python src/transit/10_route_removal_access.py
 """
 
 from __future__ import annotations
@@ -133,7 +133,7 @@ def main() -> None:
             "simple_elderly_affected", "simple_added_min_mean", "net_elderly_over_10min_new"]
     print(out.groupby("class")[cols].median().round(1).to_string())
     two = out[out["class_id"] == 2].sort_values("net_elderly_affected", ascending=False)
-    print("\n  ② 칸 노선 상위 8개(도로망 기준 영향 고령 인구 순):")
+    print("\n  ② 유형 노선 상위 8개(도로망 기준 영향 고령 인구 순):")
     print(two[["노선명", *cols]].head(8).round(1).to_string(index=False))
 
 

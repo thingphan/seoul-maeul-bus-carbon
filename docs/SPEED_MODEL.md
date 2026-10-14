@@ -92,7 +92,7 @@ A/B/C는 그 링크에 쓸 수 있는 **속도 정보의 수준**이다.
 - B·C 값은 `python src/transit/checks/validate_bc_tiers.py`가 `02_build_model_bc.py --mode validate`를 그대로 돌려 계층별로 집계한 값이다(전체 R² 0.7226, 약 1시간 소요).
 - C는 성능이 낮지만 마을버스 노선 길이의 2.5%에만 쓰인다.
 - A는 요일별(7단계) 버킷이 셀당 표본 부족으로 과적합되어 평일/주말 2단계를 택했다.
-- 마을버스 실측 속도(TOPIS 노선유형 통계, 2026.10)와 비교한 외부 점검은 `src/transit/10_validate_ai_speed.py`에 있다. 낮 시간 차이는 약 1km/h이고, 20~22시는 분석 속도가 약 2.5km/h 빠르다.
+- 마을버스 실측 속도(TOPIS 노선유형 통계, 2026.10)와 비교한 외부 점검은 `src/transit/09_validate_ai_speed.py`에 있다. 낮 시간 차이는 약 1km/h이고, 20~22시는 분석 속도가 약 2.5km/h 빠르다.
 - AI 추정 구간 속도를 ±5km/h 바꿔도 마을버스 분석의 결론이 유지되는지는 `src/transit/checks/ai_speed_stress.py`로 확인한다.
 
 ## 7. 예측(`src/models/03`, `04`)

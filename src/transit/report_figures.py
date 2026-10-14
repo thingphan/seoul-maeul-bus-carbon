@@ -1,4 +1,4 @@
-"""마을버스 분석 보고서용 그림(PNG)을 만든다. 01~11 산출물만 읽는다.
+"""마을버스 분석 보고서용 그림(PNG)을 만든다. 01~10 산출물만 읽는다.
 
 디자인: 그림마다 결론을 말하는 제목·설명·출처를 넣고, 강조할 대상만 색을 쓰며 범례 대신 직접 라벨을 단다.
 글꼴은 Pretendard(--font-dir 또는 REPORT_FONT_DIR 폴더의 .otf/.ttf)를 쓰고, 없으면 맑은 고딕을 쓴다.
@@ -31,7 +31,7 @@ TRANSIT = PROJECT_ROOT / "data" / "processed" / "transit"
 ROUTE_PATH_CSV = PROJECT_ROOT / "data" / "raw" / "traffic" / "bus_route_path" / "route_paths.csv"
 BOUNDARY = PROJECT_ROOT / "data" / "raw" / "boundary" / "seoul_admin_boundary.geojson"
 
-# 색: 글자는 무채색, 데이터는 강조할 대상만 파랑(dataviz 검증 팔레트), 나머지는 옅은 회색.
+# 색: 글자는 무채색, 데이터는 강조할 대상만 파랑, 나머지는 옅은 회색(색각 이상에도 구분되는 조합).
 INK, INK2, MUTED = "#111827", "#4b5563", "#9ca3af"
 GRID, LINE, CARD, BORDER = "#eef0f3", "#d1d5db", "#f5f6f8", "#e5e7eb"
 BLUE, BLUE_DARK, BLUE_LIGHT, BLUE_PALE = "#2a78d6", "#184f95", "#86b6ef", "#e8f1fc"
@@ -254,8 +254,6 @@ def fig01_flow(out: Path) -> None:
     save(fig, out, "fig01_flow.png")
 # 검증 성능: A는 notebooks/03_model_a_history.ipynb(시간 순서 분할, docs/SPEED_MODEL.md). B·C는 src/models/02_build_model_bc.py
 # --mode validate(도로 단위 3-fold GroupKFold)를 등급별로 집계한 값(src/transit/checks/validate_bc_tiers.py, 전체 R² 0.7226).
-# 검증 성능: A는 docs/DATA_ANALYSIS_REPORT.md 3.2절(시간 순서 분할). B·C는 src/models/02_build_model_bc.py
-# --mode validate(도로 단위 3-fold GroupKFold)를 2026-10-12에 다시 돌려 등급별로 집계한 값(전체 R² 0.7226 재현).
 TIERS = [
     ("A_lookup", "A 관측 이력", "과거 같은 시간대 평균", "R² 0.92 · 평균 오차 2.3km/h", DIM),
     ("B_neighbor_model", "B AI 추정", "이웃 도로 관측 있음", "R² 0.72 · 평균 오차 4.6km/h", BLUE),
@@ -598,7 +596,7 @@ def fig_route_card(t: dict, out: Path, name: str, filename: str, headline: str) 
     fig.text(0.51, 0.60, "시간대별 차 안 평균 인원(명) · 가로선 3명", fontsize=9.2, fontweight="bold", color=INK)
 
     if row["van_feasible"]:
-        action = (f"저상 소형 전기차로 바꾸면", f"하루 {row['van_co2_cut_vs_current_kg_per_day']:.0f}kg · "
+        action = ("저상 소형 전기차로 바꾸면", f"하루 {row['van_co2_cut_vs_current_kg_per_day']:.0f}kg · "
                   f"{year_t(row['van_co2_cut_vs_current_kg_per_day'] / 1000)} 감축")
     else:
         action = ("가장 붐비는 구간이 1회 평균 " f"{row['avg_peak_load_per_trip']:.0f}명", "소형차로는 부족 · 크기 유지, 전기화·지원")

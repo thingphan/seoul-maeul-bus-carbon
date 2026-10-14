@@ -3,7 +3,7 @@
 보고서 순서대로 출력한다. 감축량은 모두 '현재 차량 구성 대비' 하루 값이며, 연 값은 하루 × 365이다.
 AI 속도 시험·가정 민감도·군집 점검·B/C 등급별 성능은 같은 폴더의 다른 스크립트가 계산한다.
 
-입력: data/processed/transit/의 01~11 산출물, data/processed/seoul_link_dimension.csv
+입력: data/processed/transit/의 01~10 산출물, data/processed/seoul_link_dimension.csv
 사용: python src/transit/checks/report_numbers.py
 """
 
