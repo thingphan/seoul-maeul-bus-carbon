@@ -1,31 +1,17 @@
-"""링크당 값이 고정된(시간에 안 변하는) 모든 정적 피처를 하나로 합쳐
-seoul_link_dimension.csv(63,548행)를 만든다.
+"""링크마다 시간에 따라 변하지 않는 속성을 하나로 합쳐 링크 차원 표를 만든다.
 
-구 src/08_add_dem_features.py(DEM 샘플링) + src/14_build_link_model_features.py
-(도로망 위상) + src/16_add_link_context_features.py(버스전용차로/스쿨존/
-사고다발지역/과속방지턱/교통량 AADT) + notebooks/12 9차(View-T Level5.5
-실측 평균속도/혼잡지표, 이번에 파이프라인으로 이관)를 통합한다.
+1. DEM: 링크 선형의 0·25·50·75·100% 지점 표고 → 진행 방향 경사(slope_pct)
+2. 도로망 위상: 양 끝 노드의 진입·진출 차수, 주변 제한속도·차로수, 경사 보정값(±12%)
+3. 외부 맥락: 버스전용차로(8m 버퍼 길이 비율), 어린이 보호구역(200m), 과속방지턱(10m),
+   보행자 사고다발지역(교차 사고건수), 교통량 AADT, View-T 평균속도·혼잡지표
 
-seoul_link_dem_features.csv는 seoul_link_dimension.csv를 만들기 위한 중간
-재료라 data/interim/에 둔다. 현재 속도 예측·에너지 계산 파이프라인은
-완성된 dimension 테이블을 직접 사용하므로 이 중간 파일을 소비하지 않는다.
+결측 원칙: 시설 개수·비율은 '없음'이 명확하므로 0으로 채운다. 교통량과 View-T는 조사 대상(약 28% 링크)이
+아니었을 뿐 0이 아니므로 결측을 유지해 XGBoost가 결측 분기를 학습하게 한다.
 
-bus_lane_ratio/school_zone_count/accident_hotspot_count/speed_bump_count는
-"없으면 0"이 맞다(해당 시설이 진짜 없다는 뜻). traffic_volume_aadt와
-View-T 계열(annual_avg_speed/evening_peak_speed/avg_speed_h0~23/
-congest_freq/congest_time/congest_expect)은 "없으면 NaN"이 맞다(조사
-대상이 아니었을 뿐 실제 값이 0이라는 뜻이 아님, View-T는 Level5.5
-약 28%만 커버) — 0으로 채우면 안 된다.
-
-data/raw/traffic/의 "통계지역경계(집계구_shp, 2016)"과
-"전국교통사고다발지역표준데이터.csv"는 어디서도 안 쓰인다 — 인구 CSV에
-행정동코드가 이미 있어 집계구 경계가 불필요했고, accident_hotspot_count는
-pedestrian_accident_2019_2024.csv로 이미 충분해 표준데이터가 중복이었다.
-
+입력: data/interim/seoul_link.shp·seoul_link_attr.csv(01), data/raw/dem, data/raw/traffic의 시설·교통 자료
 출력:
-  data/interim/seoul_link_dem_features.csv   (dimension을 만들기 위한 중간 재료)
-  data/processed/seoul_link_dimension.csv    (도로속성+DEM+위상+외부컨텍스트 전부)
-
+  data/interim/seoul_link_dem_features.csv   링크별 표고·경사
+  data/processed/seoul_link_dimension.csv    링크 차원 표(63,548행 × 88열)
 사용: python src/pipeline/04_build_link_dimension.py
 """
 from __future__ import annotations
@@ -60,12 +46,11 @@ CONGEST_INDEX_XLSX = RAW_DIR / "traffic" / "CongestIndex(LINK).xlsx"
 SAMPLE_POSITIONS = [0.0, 0.25, 0.5, 0.75, 1.0]
 SCHOOL_TARGET_TYPES = ["유치원", "초등학교", "어린이집", "초교", "특수학교"]
 ZERO_FILL_COLS = ["bus_lane_ratio", "school_zone_count", "accident_hotspot_count", "speed_bump_count"]
-# View-T(AverageSpeed/CongestIndex)는 Level5.5(약 28%) 링크만 커버 — traffic_volume_aadt와 같은 이유로 0이 아니라 NaN 유지
 KEEP_NA_COLS = ["traffic_volume_aadt", "annual_avg_speed", "evening_peak_speed", "congest_freq", "congest_time", "congest_expect"]
 AVG_SPEED_HOURLY_COLS = [f"avg_speed_h{h}" for h in range(24)]
 
 
-# ---------- 1. DEM (구 08) ----------
+# ---------- 1. DEM 표고·경사 ----------
 
 def load_dem_sources() -> list:
     import rasterio
@@ -145,7 +130,7 @@ def build_dem_features(seoul_link: gpd.GeoDataFrame) -> pd.DataFrame:
             source.close()
 
 
-# ---------- 2. 도로망 위상 (구 14) ----------
+# ---------- 2. 도로망 위상 ----------
 
 def build_node_features(links: pd.DataFrame) -> pd.DataFrame:
     incoming = links.groupby("T_NODE").agg(
@@ -190,7 +175,7 @@ def build_topology_features(links: pd.DataFrame) -> pd.DataFrame:
     return feature.drop(columns=drop_cols)
 
 
-# ---------- 3. 외부 컨텍스트 (구 src/16) ----------
+# ---------- 3. 외부 맥락(시설·교통) ----------
 
 def build_bus_lane_ratio(seoul_link: gpd.GeoDataFrame) -> pd.DataFrame:
     bus = gpd.read_file(BUS_LANE_SHP).to_crs(seoul_link.crs)
@@ -236,7 +221,7 @@ def build_speed_bump_count(seoul_link: gpd.GeoDataFrame) -> pd.DataFrame:
 
 
 def _explode_its_link_id(frame: pd.DataFrame, seoul_ids: set) -> pd.DataFrame:
-    """ITS_LINK_ID(콤마로 여러 LINK_ID 묶임)를 행으로 펼쳐 서울 링크만 남긴다. traffic_volume/View-T가 공유하는 매칭 방식."""
+    """ITS_LINK_ID(쉼표로 여러 LINK_ID가 묶임)를 행으로 펼쳐 서울 링크만 남긴다(교통량·View-T 공용)."""
     frame = frame.copy()
     frame["its_id_list"] = frame["ITS_LINK_ID"].astype(str).str.split(",")
     exp = frame.explode("its_id_list")
@@ -245,7 +230,7 @@ def _explode_its_link_id(frame: pd.DataFrame, seoul_ids: set) -> pd.DataFrame:
 
 
 def build_viewt_avg_speed(seoul_ids: set) -> pd.DataFrame:
-    """View-T Level5.5 실측 평균속도(연간/저녁첨두/시간대별). notebooks/12 9차와 동일 원본·로직."""
+    """View-T 평균속도(연간·저녁첨두·시간대별)."""
     cols = (["LEVEL55_LINK_ID", "ITS_LINK_ID", "road_rank_as", "road_name_as", "region_as",
              "length_km_as", "lanes_as", "annual_avg_speed", "evening_peak_speed"]
             + [f"speed_h{h}" for h in range(24)])
@@ -272,7 +257,7 @@ def build_viewt_avg_speed(seoul_ids: set) -> pd.DataFrame:
 
 
 def build_viewt_congest(seoul_ids: set) -> pd.DataFrame:
-    """View-T Level5.5 혼잡빈도/시간/기대강도. notebooks/12 9차와 동일 원본·로직."""
+    """View-T 혼잡빈도·혼잡시간·기대강도."""
     cols = ["LEVEL55_LINK_ID", "ITS_LINK_ID", "road_rank_ci", "road_name_ci", "region_ci",
             "length_km_ci", "lanes_ci", "congest_freq", "congest_time", "congest_expect"]
     raw = pd.read_excel(CONGEST_INDEX_XLSX, sheet_name="Sheet0", header=6, skiprows=[7])
@@ -293,19 +278,12 @@ def build_traffic_volume_aadt(seoul_ids: set) -> pd.DataFrame:
     ] + [f"vol_h{h}" for h in range(1, 25)]
     tv = pd.read_excel(TRAFFIC_VOLUME_XLSX, sheet_name="Sheet0", header=6, skiprows=[7])
     tv.columns = tv_col_names
-    tv["its_id_list"] = tv["ITS_LINK_ID"].astype(str).str.split(",")
-    exp = tv.explode("its_id_list")
-    exp["LINK_ID"] = exp["its_id_list"].str.strip()
-    exp = exp[(exp["LINK_ID"] != "0") & exp["LINK_ID"].isin(seoul_ids)]
+    exp = _explode_its_link_id(tv, seoul_ids)
     return exp.groupby("LINK_ID", as_index=False)["aadt"].mean().rename(columns={"aadt": "traffic_volume_aadt"})
 
 
 def build_external_context(seoul_link: gpd.GeoDataFrame, seoul_ids: set) -> pd.DataFrame:
-    """외부 컨텍스트 결합. 원본이 없는 항목은 건너뛰고 무엇이 빠졌는지 알린다.
-
-    data/raw는 Git에 올리지 않으므로, 원본 일부만 받은 사람도 파이프라인을 돌려
-    나머지 피처는 얻을 수 있어야 한다. 원본이 있으면 동작은 이전과 동일하다.
-    """
+    """외부 맥락 변수를 결합한다. 원본이 없는 항목은 건너뛰고 무엇이 빠졌는지 알린다."""
     base = pd.DataFrame({"LINK_ID": seoul_link["LINK_ID"]})
     skipped = []
     sources = [
@@ -363,7 +341,7 @@ def main() -> None:
     print("[4/4] 전부 결합...")
     dimension = (
         attr_dem
-        .merge(topology.drop(columns=[c for c in ["slope_pct_clipped_dup"] if c in topology.columns]), on="LINK_ID", how="left")
+        .merge(topology, on="LINK_ID", how="left")
         .merge(context, on="LINK_ID", how="left")
     )
     dimension.to_csv(DIMENSION_OUT, index=False, encoding="utf-8-sig")

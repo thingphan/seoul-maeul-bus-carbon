@@ -1,8 +1,9 @@
-"""KMA HSR 기반 격자 위경도 및 1시간 누적 레이더 강수량을 내려받는다.
+"""기상청 API허브에서 HSR 레이더 격자 위·경도와 1시간 누적 강수(HSR 기반)를 내려받는다.
 
-구 src/09_fetch_kma_radar.py와 로직 동일, src/pipeline/으로 위치만 이동.
+인증키는 환경변수 KMA_API_KEY(또는 data/raw/weather/kma_api_key.txt, Git 제외)에서 읽는다.
+원시값 -25000은 관측영역 내 무강수, -30000 이하는 관측영역 밖이며 변환은 05와 weather_snapshot이 한다.
 
-출력: data/raw/weather/grid/*.txt, data/raw/weather/radar/*.txt
+출력: data/raw/weather/grid/hsr_{lon,lat}.txt, data/raw/weather/radar/hsr_pcph_acc60_{tm}.txt
 
 사용:
   python src/pipeline/03_fetch_kma_radar.py --grid
@@ -24,7 +25,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_DATA_DIR = PROJECT_ROOT / "data" / "raw"
 WEATHER_RAW_DIR = RAW_DATA_DIR / "weather"
 INTERIM_DATA_DIR = PROJECT_ROOT / "data" / "interim"
-PROCESSED_DATA_DIR = PROJECT_ROOT / "data" / "processed"
 KMA_API_KEY_PATH = WEATHER_RAW_DIR / "kma_api_key.txt"
 FIVEMIN_SPEED_PATH = INTERIM_DATA_DIR / "seoul_link_speed_5min_hourly.csv"
 
@@ -103,8 +103,6 @@ def save_text(url: str, out_path: Path, api_key: str, overwrite: bool = False) -
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(text, encoding="utf-8")
     print("저장:", out_path)
-    print("응답 앞부분:")
-    print(text[:500])
 
 
 def fetch_grid(api_key: str, overwrite: bool = False) -> None:
@@ -142,13 +140,13 @@ def iter_5min_speed_tms():
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="KMA HSR 기반 1시간 누적 레이더 강수량 데이터를 내려받습니다.")
-    parser.add_argument("--grid", action="store_true")
-    parser.add_argument("--tm")
-    parser.add_argument("--start-tm")
-    parser.add_argument("--end-tm")
-    parser.add_argument("--step-minutes", type=int, default=60)
-    parser.add_argument("--from-5min-times", action="store_true")
-    parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--grid", action="store_true", help="레이더 격자 위·경도 파일 받기")
+    parser.add_argument("--tm", help="한 시점 받기(YYYYMMDDHHMM)")
+    parser.add_argument("--start-tm", help="범위 시작(YYYYMMDDHHMM)")
+    parser.add_argument("--end-tm", help="범위 끝(YYYYMMDDHHMM)")
+    parser.add_argument("--step-minutes", type=int, default=60, help="범위 간격(분)")
+    parser.add_argument("--from-5min-times", action="store_true", help="02 결과에 있는 시각을 모두 받기")
+    parser.add_argument("--overwrite", action="store_true", help="이미 받은 파일도 다시 받기")
     args = parser.parse_args()
 
     if not args.grid and not args.tm and not (args.start_tm and args.end_tm) and not args.from_5min_times:

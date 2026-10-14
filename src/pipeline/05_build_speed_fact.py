@@ -1,21 +1,14 @@
-"""(LINK_ID, 기준일, 시간코드)마다 실제로 값이 달라지는 것만 모아
-seoul_link_speed_fact.csv(약 1,509만 행)를 만든다.
+"""관측속도(02)에 시간에 따라 변하는 변수를 붙여 속도 관측 팩트를 만든다.
 
-구 src/10_add_radar_precip_features.py(레이더 강수 매칭)와 src/17_add_traffic_volume_hourly.py
-(시간대별 교통량)에 notebooks/12 5절(생활인구 격자/행정동, 이번에 파이프라인으로
-이관)을 더해 02번 산출물에 직접 붙인다. 생활인구는 fact의 실제 기준일 범위(현재
-14일)만 로드하므로, 향후 기간이 늘어나면 250_LOCAL_RESD_*/ADMDONG_* 원본도
-그 범위를 커버해야 한다.
+1. 레이더 강수: 링크 중심점과 가장 가까운 HSR 격자의 1시간 누적 강수(precip_mm)
+2. 시간대별 교통량: View-T 시간대 교통량과 AADT 대비 비율
+3. 생활인구: 링크 중심점이 속한 250m 격자 인구(grid_pop)와 그 격자의 대표 행정동 인구(dong_pop)
 
-정적 속성(도로속성/DEM/위상/외부컨텍스트)은 여기 안 들어간다 — 전부
-04_build_link_dimension.py가 만드는 seoul_link_dimension.csv 쪽에 있고,
-쓸 때 LINK_ID로 merge한다. tm/match_method/source_section_id/
-source_observation_id/sample_weight는 전부 상수이거나 LINK_ID/기준일/
-시간코드로 즉시 유도 가능해서 저장하지 않는다(소비 스크립트가 필요하면
-한 줄로 만들어 씀).
+시간에 따라 변하지 않는 도로 속성은 04의 링크 차원 표에 있고, 모델에서 LINK_ID로 결합한다.
+생활인구는 팩트에 있는 날짜만 읽으므로, 기간을 늘리면 생활인구 원본도 그 기간을 포함해야 한다.
 
-출력: data/processed/seoul_link_speed_fact.csv
-
+입력: data/interim/seoul_link_speed_5min_hourly.csv(02), data/raw/weather(03), View-T 교통량, 생활인구
+출력: data/processed/seoul_link_speed_fact.csv(15,094,335행)
 사용: python src/pipeline/05_build_speed_fact.py
 """
 from __future__ import annotations
@@ -50,7 +43,7 @@ OUT_CSV = PROCESSED_DIR / "seoul_link_speed_fact.csv"
 SEOUL_BBOX = {"lon_min": 126.70, "lon_max": 127.25, "lat_min": 37.35, "lat_max": 37.75}
 
 
-# ---------- 레이더 강수 (구 10) ----------
+# ---------- 레이더 강수 ----------
 
 def parse_kma_ascii_grid(path: Path) -> tuple[int, int, np.ndarray]:
     text = path.read_text(encoding="utf-8")
@@ -81,7 +74,7 @@ def load_or_build_seoul_grid() -> dict[str, np.ndarray]:
     )
     rows, cols = np.where(mask)
     flat_indices = rows * width + cols
-    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+    GRID_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         GRID_CACHE_PATH, width=np.asarray(width), height=np.asarray(height), rows=rows, cols=cols,
         flat_indices=flat_indices, lon=lon_grid[rows, cols], lat=lat_grid[rows, cols],
@@ -160,7 +153,7 @@ def build_precip(fact: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-# ---------- 시간대별 교통량 (구 src/17) ----------
+# ---------- 시간대별 교통량 ----------
 
 def build_hourly_traffic_volume(seoul_ids: set) -> pd.DataFrame:
     tv_col_names = [
@@ -184,7 +177,7 @@ def build_hourly_traffic_volume(seoul_ids: set) -> pd.DataFrame:
     return long.drop(columns=["aadt"])
 
 
-# ---------- 생활인구 격자/행정동 (신규, notebooks/12 5절과 동일 원본·로직) ----------
+# ---------- 생활인구(격자·행정동) ----------
 
 def build_population_features(fact: pd.DataFrame) -> pd.DataFrame:
     """(LINK_ID, 기준일, 시간코드)별 250m격자/행정동 생활인구. 시간코드-1=실제시(0~23시)."""

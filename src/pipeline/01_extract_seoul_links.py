@@ -1,13 +1,11 @@
 """서울 행정경계와 교차하는 표준노드링크를 추출한다.
 
-구 src/02_extract_seoul_links.py와 동일한 로직이되, UPDATEDATE/REMARK/
-HIST_TYPE/HISTREMARK는 순수 메타데이터라 어떤 모델링에서도 쓰인 적이 없어
-드롭한다(seoul_link_dimension.csv로 통합될 때 불필요한 컬럼을 안 만들기 위함).
+경계에 걸친 링크는 잘라내지 않고 형상 전체를 남긴다. 갱신일·비고 등 분석에 쓰지 않는 메타데이터 열은 뺀다.
 
+입력: data/raw/road/MOCT_LINK.shp, data/raw/boundary/seoul_admin_boundary.geojson
 출력:
-  data/interim/seoul_link.shp        (geometry 포함, 63,548개)
-  data/interim/seoul_link_attr.csv   (속성만, 04번이 dimension으로 확장하는 중간 재료)
-
+  data/interim/seoul_link.shp        링크 형상(63,548개)
+  data/interim/seoul_link_attr.csv   링크 속성(04가 링크 차원 표로 확장)
 사용: python src/pipeline/01_extract_seoul_links.py
 """
 from __future__ import annotations
@@ -28,7 +26,6 @@ BOUNDARY_PATH = BOUNDARY_RAW_DIR / "seoul_admin_boundary.geojson"
 OUT_SHP = INTERIM_DATA_DIR / "seoul_link.shp"
 OUT_CSV = INTERIM_DATA_DIR / "seoul_link_attr.csv"
 
-# 어떤 모델/노트북에서도 쓰인 적 없는 순수 메타데이터 컬럼 — dimension 테이블에 안 들어감
 DROP_META_COLS = ["UPDATEDATE", "REMARK", "HIST_TYPE", "HISTREMARK"]
 
 
