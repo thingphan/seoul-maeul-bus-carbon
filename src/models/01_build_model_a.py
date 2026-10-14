@@ -1,28 +1,13 @@
-"""관측 링크(70.75%)를 위한 (LINK_ID, 시간코드, is_weekend) 조회표를 만든다.
+"""Model A: 관측 이력이 있는 링크의 (LINK_ID, 시간코드, 평일/주말) 평균속도 조회표를 만든다.
 
-notebooks/03_model_a_history.ipynb에서 시간 분할(과거 11일 학습 -> 미래 3일
-평가, 진짜 미래예측 시나리오)로 검증된 설계를 그대로 가져온다:
-  - 조회표(link x hour x 주중/주말) 단독: R2=0.9249
-  - + LightGBM(사전계획 피처: lag_24h/lag_168h 등, 실시간 피처 제외): R2=0.9276
-  둘의 차이가 +0.0027뿐이라 학습 비용 없이 조회표만 쓴다.
-  - 요일을 7단계로 세분하면 셀당 표본이 부족해 과적합된다(같은 노트북에서
-    T-data 실험으로 이미 확인) -> 주중/주말 2단계만 쓴다.
+조합에 관측이 없으면 링크×시간 → 링크 → 전체 평균 순으로 대체한다.
+notebooks/03의 시간 순서 분할(과거 기간 학습 → 이후 3일 평가)에서 조회표만으로 R² 0.925를 얻었고,
+과거 패턴 변수를 더한 LightGBM(0.928)과 차이가 작아 학습 없는 조회표를 택했다.
+요일별(7단계) 구분은 칸당 표본이 부족해 과적합되어 평일/주말 2단계만 쓴다.
 
-배포 시점엔 라이브 피드가 없어 lag_1h/roll_3h(직전 시간 실측) 같은 실시간
-피처를 쓸 수 없다 -> "사전계획" 시나리오만 해당하므로 위 결과가 정확히 우리
-상황이다.
-
-시간코드는 T-data 규칙(1~24, 00시대=01 ... 23시대=24)을 그대로 쓴다 -
-notebooks/03_model_a_history.ipynb와 동일 키라 검증된 성능이 그대로 적용된다
-(notebooks/02_derived_features_lightgbm.ipynb 등 다른 곳에서 쓰는
-"시간코드-1=실제시(0~23시)" 변환과는 다른 키이니 섞어 쓰지 않는다).
-
-결측 조합(관측이 빠진 링크x시간x주중주말)은 상위 키로 폴백한다:
-  link x hour x weekend -> link x hour -> link -> 전체 평균
-
+입력: data/processed/seoul_link_speed_fact.csv(pipeline/05)
 출력: data/processed/model_a_lookup.parquet
-  컬럼: LINK_ID, 시간코드(1~24), is_weekend(0/1), pred_speed, n_obs, source
-
+      LINK_ID, 시간코드(1~24), is_weekend(0/1), pred_speed, n_obs, source(사용한 대체 단계)
 사용: python src/models/01_build_model_a.py
 """
 from __future__ import annotations

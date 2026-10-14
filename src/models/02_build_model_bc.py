@@ -1,32 +1,18 @@
-"""Model B/C(미관측 링크, 29.25%) 최종 학습 + 배포 아티팩트 생성.
+"""Model B·C: 관측이 없는 링크의 속도를 XGBoost로 추정하고 검증한다.
 
-notebooks/02_derived_features_lightgbm.ipynb의 16차(FEATURE_COLS_16CHA, XGBoost)를
-기반으로 하되, 이웃속도 피처의 정의를 배포에 맞게 다시 설계한다.
+- B(이웃속도 포함, 61개 변수): 1칸 이웃(없으면 2칸 이웃) 관측 링크의 속도를 변수로 쓴다.
+- C(이웃속도 제외, 60개 변수): 이웃 관측도 없는 링크용 모델이다.
 
-## 왜 다시 설계하나
-16차까지의 GroupKFold 평가는 이웃속도 피처를 "그 폴드 train 링크가 정확히 같은
-날짜x시간에 실측한 값"으로 계산했다(정밀 매칭). 그런데 배포 시점엔 라이브 피드가
-없어 미래 날짜의 실측값을 구할 수 없다 - 이 피처를 그대로 쓰면 학습 때 본 입력
-분포(정밀값)와 서빙 때 실제로 줄 수 있는 입력(과거 패턴)이 달라 성능이 새는
-train/serve 불일치가 생긴다.
+이웃속도는 '이웃 링크의 (시간코드, 평일/주말) 과거 평균'으로 정의한다(Model A 조회표와 같은 방식).
+같은 시각의 이웃 실측값은 미래 시점에 얻을 수 없으므로, 학습과 예측에 같은 정의를 써서
+학습·서빙 불일치를 막는다. 따라서 검증 성능이 곧 실제 적용 시 기대 성능이다.
 
-이 스크립트는 처음부터 이웃속도를 "그 이웃의 (시간코드, is_weekend) 버킷 평균"
-(01_build_model_a.py와 완전히 같은 방식)으로 정의한다. 학습과 서빙이 완전히
-같은 정의를 쓰므로 불일치가 없고, 검증(--mode validate)에서 나온 R2가 곧 실제
-배포 기대 성능이다.
+  --mode validate  도로 단위 3-fold GroupKFold. fold마다 이웃속도 조회표를 학습 도로만으로 다시 만들어 누수를 막는다(저장 없음)
+  --mode final     전체 자료로 B·C를 학습해 src/models/artifacts/에 저장하고, 이웃속도 조회표를 data/processed/에 저장(기본값)
 
-## 두 모드
-  --mode validate : 3-fold GroupKFold(LINK_ID)로 이 설계의 정직한 기대 성능만 확인(저장 없음)
-  --mode final     : 전체 데이터로 model_nb/model_stat 학습 + 아티팩트 저장(기본값)
-
-validate 모드에서는 매 폴드마다 이웃 버킷평균 lookup을 그 폴드의 train 링크
-데이터만으로 다시 만든다(다른 곳처럼 폴드 누수 방지). final 모드는
-01_build_model_a.py가 이미 만든 data/processed/model_a_lookup.parquet(전체
-관측 링크 기준)을 그대로 이웃 소스로 재사용한다 - 그래서 model_a_lookup.parquet을
-먼저 만들어야 한다.
-
+입력: data/processed/seoul_link_dimension.csv(pipeline/04), seoul_link_speed_fact.csv(pipeline/05),
+      model_a_lookup.parquet(01, final 모드), data/raw/road/MOCT_NODE.shp
 사용:
-  python src/models/01_build_model_a.py   (먼저 실행)
   python src/models/02_build_model_bc.py --mode validate
   python src/models/02_build_model_bc.py --mode final
 """
@@ -36,6 +22,7 @@ import argparse
 import gc
 import pickle
 from collections import defaultdict
+from itertools import product
 from pathlib import Path
 
 import geopandas as gpd
@@ -51,13 +38,11 @@ RAW_DIR = PROJECT_ROOT / "data" / "raw"
 INTERIM_DIR = PROJECT_ROOT / "data" / "interim"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 MODELS_DIR = PROJECT_ROOT / "src" / "models" / "artifacts"
-MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
 DIMENSION_PATH = PROCESSED_DIR / "seoul_link_dimension.csv"
 FACT_PATH = PROCESSED_DIR / "seoul_link_speed_fact.csv"
 MODEL_A_PATH = PROCESSED_DIR / "model_a_lookup.parquet"
 MOCT_NODE_SHP = RAW_DIR / "road" / "MOCT_NODE.shp"
-TURNINFO_DBF = RAW_DIR / "road" / "TURNINFO.dbf"
 
 TARGET = "평균속도"
 RANDOM_STATE = 42
@@ -100,8 +85,7 @@ CBD_X, CBD_Y = 198000.0, 552000.0  # 서울시청 부근 좌표(EPSG:5179)
 def load_dimension_and_fact() -> tuple[pd.DataFrame, pd.DataFrame]:
     dim_dtype = {c: str for c in CATEGORICAL_COLS if c != "c_its"}
     dim_dtype.update({"LINK_ID": str, "F_NODE": str, "T_NODE": str, "C-ITS": str, "ROAD_NAME": str})
-    # avg_speed_hourly는 dimension의 실제 컬럼이 아니라 avg_speed_h0~h23(24개, 링크당 시간대 프로파일)
-    # 중 그 행의 실제 시간에 해당하는 값을 assemble_features가 골라 만드는 파생 컬럼이라 여기서는 제외
+    # avg_speed_hourly는 차원 표의 avg_speed_h0~23 중 그 행의 시간 값을 assemble_features가 골라 만든다
     viewt_raw_cols = [c for c in VIEWT_COLS if c != "avg_speed_hourly"]
     dim_cols = (
         ["LINK_ID", "F_NODE", "T_NODE", "ROAD_NAME"] + [c for c in CATEGORICAL_COLS if c != "c_its"] + ["C-ITS"]
@@ -123,8 +107,7 @@ def load_dimension_and_fact() -> tuple[pd.DataFrame, pd.DataFrame]:
                 "grid_pop", "dong_pop", "sample_count_5min"]:
         fact[col] = pd.to_numeric(fact[col], errors="coerce")
     fact = fact.dropna(subset=[TARGET])
-    # 정수로 고정 -- Model A/이웃버킷 lookup(01_build_model_a.py)의 시간코드도 int라 join 시
-    # dtype이 안 맞으면(float vs int) 조용히 매칭이 깨질 수 있음
+    # 조회표의 시간코드(int)와 자료형을 맞춘다. float과 결합하면 매칭이 조용히 실패한다
     fact["시간코드"] = pd.to_numeric(fact["시간코드"], errors="coerce").astype(int)
     return dimension, fact
 
@@ -192,13 +175,12 @@ def build_link_graph(dimension: pd.DataFrame) -> tuple[dict, dict]:
 
 
 def build_bucket_lookup(fact_subset: pd.DataFrame, link_ids: np.ndarray) -> pd.DataFrame:
-    """(LINK_ID, 시간코드, is_weekend) 평균 + 폴백(hour -> link -> 전체평균). 01_build_model_a.py와 동일 로직."""
+    """(LINK_ID, 시간코드, is_weekend) 평균. 비면 링크×시간 → 링크 → 전체 평균으로 대체(01과 같은 방식)."""
     global_mean = fact_subset[TARGET].mean()
     lut_link = fact_subset.groupby("LINK_ID")[TARGET].mean()
     lut_link_hour = fact_subset.groupby(["LINK_ID", "시간코드"])[TARGET].mean()
     fine = fact_subset.groupby(["LINK_ID", "시간코드", "is_weekend"])[TARGET].mean()
 
-    from itertools import product
     full_index = pd.MultiIndex.from_tuples(
         list(product(link_ids, BUCKET_HOURS, [0, 1])), names=["LINK_ID", "시간코드", "is_weekend"]
     )
@@ -213,12 +195,10 @@ def build_bucket_lookup(fact_subset: pd.DataFrame, link_ids: np.ndarray) -> pd.D
 
 def build_neighbor_bucket_feature(bucket_lookup: pd.DataFrame, link_neighbors: dict, link_neighbors_2hop: dict,
                                   all_link_ids: np.ndarray, allowed_links: set) -> pd.DataFrame:
-    """모든 링크(all_link_ids, 값을 계산해 줄 대상 - 관측/미관측 전부)에 대해,
-    allowed_links(이웃 소스로 인정할 집합 - 관측/train 링크)만 평균에 반영해
-    이웃 버킷평균 속도를 링크x시간코드x주중주말로 집계.
+    """링크×시간코드×평일/주말 이웃속도를 만든다.
 
-    all_link_ids와 allowed_links를 같은 값으로 넘기면(예전 실수) test/미관측
-    링크 자신은 결과 테이블에 아예 없어서 조회가 100% 실패한다 - 반드시 분리해야 함.
+    all_link_ids는 값을 만들어 줄 대상(평가·미관측 링크 포함 전부), allowed_links는 이웃 소스로 인정할
+    링크(학습 또는 관측 링크)다. 둘을 같게 넘기면 평가·미관측 링크가 결과에서 빠지므로 반드시 구분한다.
     """
     link_ids_sorted = np.sort(np.array(list(all_link_ids)))
     link_idx = {l: i for i, l in enumerate(link_ids_sorted)}
@@ -319,7 +299,6 @@ def run_validate(df: pd.DataFrame, link_neighbors: dict, link_neighbors_2hop: di
         assert len(train_links & test_links) == 0
 
         bucket_lookup = build_bucket_lookup(df.iloc[train_idx][["LINK_ID", "시간코드", "is_weekend", TARGET]], np.sort(np.array(list(train_links))))
-        # all_link_ids: test 링크 자신도 결과표에 있어야 조회가 됨(train_links는 이웃 소스로만 제한)
         neighbor_long = build_neighbor_bucket_feature(bucket_lookup, link_neighbors, link_neighbors_2hop, all_link_ids, train_links)
         merged = df[["LINK_ID", "시간코드", "is_weekend"]].merge(neighbor_long, on=["LINK_ID", "시간코드", "is_weekend"], how="left")
 
@@ -356,7 +335,7 @@ def run_validate(df: pd.DataFrame, link_neighbors: dict, link_neighbors_2hop: di
         gc.collect()
 
     summary = pd.DataFrame(rows)
-    print("\n=== 3-fold 평균(버킷평균 이웃속도, 배포와 동일 정의) ===")
+    print("\n=== 3-fold 평균 ===")
     print(summary[["split_rmse", "split_mae", "split_r2"]].mean().round(4).to_string())
 
 
@@ -365,7 +344,6 @@ def run_final(df: pd.DataFrame, link_neighbors: dict, link_neighbors_2hop: dict,
     observed_links = set(model_a["LINK_ID"].unique())
     bucket_lookup = model_a[["LINK_ID", "시간코드", "is_weekend", "pred_speed"]]
 
-    # all_link_ids: 전체 63,548개 링크(관측+미관측 전부) - 미관측 링크도 서빙 때 이 조회표가 필요함
     neighbor_long = build_neighbor_bucket_feature(bucket_lookup, link_neighbors, link_neighbors_2hop, all_link_ids, observed_links)
     neighbor_long.to_parquet(PROCESSED_DIR / "neighbor_speed_lookup.parquet", index=False)
     print("이웃속도 lookup 저장:", PROCESSED_DIR / "neighbor_speed_lookup.parquet", "| 행 수:", len(neighbor_long))
@@ -382,6 +360,7 @@ def run_final(df: pd.DataFrame, link_neighbors: dict, link_neighbors_2hop: dict,
     model_nb = make_and_fit(Xf, yf, w)
     model_stat = make_and_fit(Xf[STATIC_COLS], yf, w)
 
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
     with open(MODELS_DIR / "model_nb.pkl", "wb") as f:
         pickle.dump({"model": model_nb, "feature_cols": FEATURE_COLS, "categorical_cols": CATEGORICAL_COLS}, f)
     with open(MODELS_DIR / "model_stat.pkl", "wb") as f:
@@ -390,8 +369,9 @@ def run_final(df: pd.DataFrame, link_neighbors: dict, link_neighbors_2hop: dict,
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=["validate", "final"], default="final")
+    parser = argparse.ArgumentParser(description="Model B·C 학습과 검증")
+    parser.add_argument("--mode", choices=["validate", "final"], default="final",
+                        help="validate: 도로 단위 GroupKFold 검증, final: 전체 학습과 저장")
     args = parser.parse_args()
 
     print("데이터 로드 중...")

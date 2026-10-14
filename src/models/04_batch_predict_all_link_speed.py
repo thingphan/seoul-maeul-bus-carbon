@@ -1,10 +1,10 @@
-"""저장된 A/B/C 모델로 기간 전체의 전 링크 시간별 속도 CSV를 생성한다.
+"""저장된 A/B/C 모델로 기간 전체의 전 링크 시간별 속도를 예측한다.
 
-예:
-    python src/models/04_batch_predict_all_link_speed.py --start-date 20260707 --end-date 20260720
+03을 시점마다 실행하는 대신, 속도 팩트를 한 번만 읽어 시간대별 교통량·생활인구 프로필을 만들고
+정적 변수를 재사용한다. 레이더 원본이 없는 시각은 건너뛰고, 이미 있는 출력은 --overwrite가 없으면 유지한다.
 
-입력 레이더 파일이 없는 시간은 기본적으로 건너뛴다. 출력은 시간별로
-``data/processed/all_link_speed_prediction_YYYYMMDDHHMM.csv``에 저장된다.
+출력: data/processed/all_link_speed_prediction_{YYYYMMDDHHMM}.csv(시점별)
+사용: python src/models/04_batch_predict_all_link_speed.py --start-date 20260707 --end-date 20260720
 """
 
 from __future__ import annotations
@@ -46,9 +46,7 @@ def parse_args() -> argparse.Namespace:
 
 def make_dynamic_profiles(fact_path: Path) -> pd.DataFrame:
     """팩트를 한 번만 읽어 링크×시간×주말여부별 동적 피처 평균을 만든다."""
-    header = list(pd.read_csv(fact_path, nrows=0, encoding="utf-8-sig").columns)
-    date_col = header[1]  # 기준일
-    hour_col = header[2]  # 시간코드
+    date_col, hour_col = "기준일", "시간코드"
     value_cols = ["traffic_volume_hourly", "traffic_volume_ratio", "grid_pop", "dong_pop"]
     sums: pd.DataFrame | None = None
     counts: pd.DataFrame | None = None
@@ -176,22 +174,9 @@ def main() -> None:
         predictor.align_model_categories(frame, nb_artifact)
         predictor.align_model_categories(frame, stat_artifact)
 
-        is_a = frame["model_a_speed"].notna()
-        is_b = ~is_a & frame[builder.NEIGHBOR_COL].notna()
-        is_c = ~is_a & ~is_b
-        speed = pd.Series(np.nan, index=frame.index, dtype="float32")
-        speed.loc[is_a] = frame.loc[is_a, "model_a_speed"].to_numpy(dtype="float32")
-        speed.loc[is_b] = nb_artifact["model"].predict(frame.loc[is_b, nb_features])
-        speed.loc[is_c] = stat_artifact["model"].predict(frame.loc[is_c, stat_features])
-        max_speed = pd.to_numeric(frame["MAX_SPD"], errors="coerce").fillna(110).clip(lower=3)
-        frame["speed_kmh"] = speed.clip(lower=3).clip(upper=max_speed).round(3)
-        frame["tier"] = np.select([is_a, is_b], ["A_lookup", "B_neighbor_model"], default="C_static_model")
-        frame["speed_source"] = np.select([is_a, is_b], ["model_a_lookup", "model_nb"], default="model_stat")
-        frame["prediction_confidence"] = np.select([is_a, is_b], ["high", "medium"], default="low")
-        keep = ["LINK_ID", "F_NODE", "T_NODE", "LENGTH", "ROAD_NAME", "MAX_SPD", "ROAD_RANK",
-                "slope_pct", "precip_mm", "시간코드", "is_weekend", builder.NEIGHBOR_COL,
-                "speed_kmh", "tier", "speed_source", "prediction_confidence"]
-        frame[[col for col in keep if col in frame.columns]].to_csv(output, index=False, encoding="utf-8-sig")
+        predictor.predict_speed(frame, builder, nb_artifact, stat_artifact, nb_features, stat_features)
+        keep = [col for col in predictor.output_columns(builder) if col in frame.columns]
+        frame[keep].to_csv(output, index=False, encoding="utf-8-sig")
         completed += 1
         print(f"[{index}/{len(timestamps)}] {tm_text} 완료 | 평균 {frame['speed_kmh'].mean():.2f} km/h")
 
