@@ -26,10 +26,10 @@
 
 <table>
 <tr>
-<td align="center" width="25%">🌿 <b>탄소 효율</b><h3>223 / 230</h3>승객 1명·1km당 CO₂가<br>승용차보다 적은 노선<br><sub>중앙값 91.1g 대 308.0g</sub></td>
-<td align="center" width="25%">👵 <b>이동권</b><h3>약 2배</h3>노선을 없앨 때 보행이 늘어나는<br>고령 인구(의존도 높은 노선)<br><sub>1,372~1,684명 대 641~749명</sub></td>
-<td align="center" width="25%">🤖 <b>AI 피크 예측</b><h3>5.34% → 0.21%</h3>소형차 후보 운행의<br>정원(16명) 초과율<br><sub>과거 기록 기준 대비</sub></td>
-<td align="center" width="25%">🚐 <b>실행 후보</b><h3>5대 · 3개 노선</h3>운영 제약을 통과한 시범 후보<br>(중랑01·서초05·서초01)<br><sub>하루 44.1kgCO₂eq, 20대로 늘려도 동일</sub></td>
+<td align="center" width="25%"><b>탄소 효율</b><h3>223 / 230</h3>승객 1명·1km당 CO₂가<br>승용차보다 적은 노선<br><sub>중앙값 91.1g 대 308.0g</sub></td>
+<td align="center" width="25%"><b>이동권</b><h3>약 2배</h3>노선을 없앨 때 보행이 늘어나는<br>고령 인구(의존도 높은 노선)<br><sub>1,372~1,684명 대 641~749명</sub></td>
+<td align="center" width="25%"><b>AI 피크 예측</b><h3>5.34% → 0.21%</h3>소형차 후보 운행의<br>정원(16명) 초과율<br><sub>과거 기록 기준 대비</sub></td>
+<td align="center" width="25%"><b>실행 후보</b><h3>5대 · 3개 노선</h3>운영 제약을 통과한 시범 후보<br>(중랑01·서초05·서초01)<br><sub>하루 44.1kgCO₂eq, 20대로 늘려도 동일</sub></td>
 </tr>
 </table>
 
