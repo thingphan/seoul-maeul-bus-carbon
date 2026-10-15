@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="397.245948pt" height="223.022452pt" viewBox="0 0 397.245948 223.022452" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-14T21:20:08.865059</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.1, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 223.022452 
+L 397.245948 223.022452 
+L 397.245948 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 100.254688 184.201749 
+L 386.660164 184.201749 
+L 386.660164 22.680625 
+L 100.254688 22.680625 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 100.254688 30.022494 
+L 373.021808 30.022494 
+L 373.021808 47.297481 
+L 100.254688 47.297481 
+z
+" clip-path="url(#pb340d4f17d)" style="fill: #234e70"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 100.254688 51.616227 
+L 343.225631 51.616227 
+L 343.225631 68.891214 
+L 100.254688 68.891214 
+z
+" clip-path="url(#pb340d4f17d)" style="fill: #234e70"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 100.254688 73.209961 
+L 197.316179 73.209961 
+L 197.316179 90.484947 
+L 100.254688 90.484947 
+z
+" clip-path="url(#pb340d4f17d)" style="fill: #234e70"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 100.254688 94.803694 
+L 153.108365 94.803694 
+L 153.108365 112.07868 
+L 100.254688 112.07868 
+z
+" clip-path="url(#pb340d4f17d)" style="fill: #234e70"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 100.254688 116.397427 
+L 136.701222 116.397427 
+L 136.701222 133.672413 
+L 100.254688 133.672413 
+z
+" clip-path="url(#pb340d4f17d)" style="fill: #234e70"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 100.254688 137.99116 
+L 129.319619 137.99116 
+L 129.319619 155.266146 
+L 100.254688 155.266146 
+z
+" clip-path="url(#pb340d4f17d)" style="fill: #234e70"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 100.254688 159.584893 
+L 122.187764 159.584893 
+L 122.187764 176.85988 
+L 100.254688 176.85988 
+z
+" clip-path="url(#pb340d4f17d)" style="fill: #234e70"/>
+   </g>
+   <g id="matplotlib.axis_1">
+    <g id="xtick_1">
+     <g id="line2d_1">
+      <defs>
+       <path id="m83ffc0966d" d="M 0 0 
+L 0 3.5 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#m83ffc0966d" x="100.254688" y="184.201749" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_1">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: middle" x="100.254688" y="199.199796" transform="rotate(-0 100.254688 199.199796)">0.00</text>
+     </g>
+    </g>
+    <g id="xtick_2">
+     <g id="line2d_2">
+      <g>
+       <use xlink:href="#m83ffc0966d" x="156.341846" y="184.201749" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_2">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: middle" x="156.341846" y="199.199796" transform="rotate(-0 156.341846 199.199796)">0.02</text>
+     </g>
+    </g>
+    <g id="xtick_3">
+     <g id="line2d_3">
+      <g>
+       <use xlink:href="#m83ffc0966d" x="212.429004" y="184.201749" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_3">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: middle" x="212.429004" y="199.199796" transform="rotate(-0 212.429004 199.199796)">0.04</text>
+     </g>
+    </g>
+    <g id="xtick_4">
+     <g id="line2d_4">
+      <g>
+       <use xlink:href="#m83ffc0966d" x="268.516162" y="184.201749" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_4">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: middle" x="268.516162" y="199.199796" transform="rotate(-0 268.516162 199.199796)">0.06</text>
+     </g>
+    </g>
+    <g id="xtick_5">
+     <g id="line2d_5">
+      <g>
+       <use xlink:href="#m83ffc0966d" x="324.603321" y="184.201749" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_5">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: middle" x="324.603321" y="199.199796" transform="rotate(-0 324.603321 199.199796)">0.08</text>
+     </g>
+    </g>
+    <g id="xtick_6">
+     <g id="line2d_6">
+      <g>
+       <use xlink:href="#m83ffc0966d" x="380.690479" y="184.201749" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_6">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: middle" x="380.690479" y="199.199796" transform="rotate(-0 380.690479 199.199796)">0.10</text>
+     </g>
+    </g>
+    <g id="text_7">
+     <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: middle" x="243.457426" y="213.820499" transform="rotate(-0 243.457426 213.820499)">규모로 나눈 피크 예측의 평균 절대 TreeSHAP 기여</text>
+    </g>
+   </g>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_7">
+      <defs>
+       <path id="mf6d4a332e0" d="M 0 0 
+L -3.5 0 
+" style="stroke: #000000; stroke-width: 0.8"/>
+      </defs>
+      <g>
+       <use xlink:href="#mf6d4a332e0" x="100.254688" y="38.659988" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_8">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: end" x="93.254688" y="42.9303" transform="rotate(-0 93.254688 42.9303)">최근 7일 평균 피크</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_8">
+      <g>
+       <use xlink:href="#mf6d4a332e0" x="100.254688" y="60.253721" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_9">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: end" x="93.254688" y="64.524033" transform="rotate(-0 93.254688 64.524033)">노선</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_9">
+      <g>
+       <use xlink:href="#mf6d4a332e0" x="100.254688" y="81.847454" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_10">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: end" x="93.254688" y="86.117766" transform="rotate(-0 93.254688 86.117766)">요일</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_10">
+      <g>
+       <use xlink:href="#mf6d4a332e0" x="100.254688" y="103.441187" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_11">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: end" x="93.254688" y="107.711499" transform="rotate(-0 93.254688 107.711499)">운행 시간</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_11">
+      <g>
+       <use xlink:href="#mf6d4a332e0" x="100.254688" y="125.03492" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_12">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: end" x="93.254688" y="129.305233" transform="rotate(-0 93.254688 129.305233)">시간 주기(sin)</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_12">
+      <g>
+       <use xlink:href="#mf6d4a332e0" x="100.254688" y="146.628653" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_13">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: end" x="93.254688" y="150.898966" transform="rotate(-0 93.254688 150.898966)">최근 7일 상위 피크</text>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_13">
+      <g>
+       <use xlink:href="#mf6d4a332e0" x="100.254688" y="168.222386" style="stroke: #000000; stroke-width: 0.8"/>
+      </g>
+     </g>
+     <g id="text_14">
+      <text style="font-size: 10px; font-family: 'Malgun Gothic'; text-anchor: end" x="93.254688" y="172.492699" transform="rotate(-0 93.254688 172.492699)">시간 주기(cos)</text>
+     </g>
+    </g>
+   </g>
+   <g id="patch_10">
+    <path d="M 100.254688 184.201749 
+L 100.254688 22.680625 
+" style="fill: none; stroke: #b3bcc4; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 100.254688 184.201749 
+L 386.660164 184.201749 
+" style="fill: none; stroke: #b3bcc4; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 11px; font-family: 'Malgun Gothic'; text-anchor: middle" x="243.457426" y="16.680625" transform="rotate(-0 243.457426 16.680625)">Q99 예측을 설명하는 변수</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pb340d4f17d">
+   <rect x="100.254688" y="22.680625" width="286.405476" height="161.521124"/>
+  </clipPath>
+ </defs>
+</svg>

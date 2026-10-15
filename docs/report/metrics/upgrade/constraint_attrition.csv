@@ -1,0 +1,7 @@
+﻿stage,duty_days,trips,potential_saved_kg_per_day
+Tagged duty-days,9983,168696,28739.575531538656
+Predicted upper <=16,40,918,64.48826850307425
+Overnight battery + reserve,34,671,48.38364306577392
+Dated stop sequence matches,31,657,45.56955181728126
+Source count consistency,31,657,45.56955181728126
+One route and >=3 tagged trips,31,657,45.56955181728126

@@ -1,0 +1,317 @@
+[
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15043",
+    "file_name": "TAIMS_20260710.zip",
+    "package_day": "20260710",
+    "service_day": "20260706",
+    "sha256": "0dbb13742203eb495e0eaf6e4856529e4b5b52fe8bf58aafcec88a115d34b770",
+    "zip_bytes": 539430794,
+    "village_rows": 1007638
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15051",
+    "file_name": "TAIMS_20260711.zip",
+    "package_day": "20260711",
+    "service_day": "20260707",
+    "sha256": "a4eb399a962c392a3b1260097629ffe1ebd98abaf37a342224a3996c3ffc6120",
+    "zip_bytes": 562567391,
+    "village_rows": 1058582
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15059",
+    "file_name": "TAIMS_20260712.zip",
+    "package_day": "20260712",
+    "service_day": "20260708",
+    "sha256": "fe1ea24ffeea6f703b80d222249d64a03f5927a9d18f322d713b84cb8541ecf1",
+    "zip_bytes": 555656672,
+    "village_rows": 1032191
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15067",
+    "file_name": "TAIMS_20260713.zip",
+    "package_day": "20260713",
+    "service_day": "20260709",
+    "sha256": "cce57ad35d10ef6be2ffc5852fd7ff90e919a886c976879c71552f35f5d53385",
+    "zip_bytes": 541544607,
+    "village_rows": 1004042
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15075",
+    "file_name": "TAIMS_20260714.zip",
+    "package_day": "20260714",
+    "service_day": "20260710",
+    "sha256": "26cd65990c7516f2f572c4c07191dac078840064ad570c5c6aaaa46b2736a7e8",
+    "zip_bytes": 583833598,
+    "village_rows": 1063296
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15083",
+    "file_name": "TAIMS_20260715.zip",
+    "package_day": "20260715",
+    "service_day": "20260711",
+    "sha256": "f85ce680b37a483f06ecc1b618dc69b261c9c52a1f80c46b40fda38da603ebad",
+    "zip_bytes": 442519084,
+    "village_rows": 758805
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15091",
+    "file_name": "TAIMS_20260716.zip",
+    "package_day": "20260716",
+    "service_day": "20260712",
+    "sha256": "39e041b47a7a10291863fe1fd7aee7b3bfdfb0fe29661f2fafd7f8fd2caeea80",
+    "zip_bytes": 326570787,
+    "village_rows": 580762
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15099",
+    "file_name": "TAIMS_20260717.zip",
+    "package_day": "20260717",
+    "service_day": "20260713",
+    "sha256": "6f252cb0d5d51eb3317d10379f53a730789944f16c63f8f24561cdc66936813c",
+    "zip_bytes": 552182284,
+    "village_rows": 1059802
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15107",
+    "file_name": "TAIMS_20260718.zip",
+    "package_day": "20260718",
+    "service_day": "20260714",
+    "sha256": "eb6628331244db73e132e39fe88f666442a7275608232ec7c4832ba30b6a2739",
+    "zip_bytes": 553304230,
+    "village_rows": 1064604
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15115",
+    "file_name": "TAIMS_20260719.zip",
+    "package_day": "20260719",
+    "service_day": "20260715",
+    "sha256": "7addb38d5fde1d141ae2ab48a9c8a06c440dadf9d47828a717d2c1cde101c926",
+    "zip_bytes": 561464448,
+    "village_rows": 1046457
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15123",
+    "file_name": "TAIMS_20260720.zip",
+    "package_day": "20260720",
+    "service_day": "20260716",
+    "sha256": "4b7fda7ed1791e1d07a2f454066fdb2532b2e96dfa3d7941e4e236ca2c03a537",
+    "zip_bytes": 586843120,
+    "village_rows": 1076820
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15131",
+    "file_name": "TAIMS_20260721.zip",
+    "package_day": "20260721",
+    "service_day": "20260717",
+    "sha256": "a4faf7a9e88a227812200898674a04590c2d69ab999e45e419204b873c4b6d1e",
+    "zip_bytes": 377097444,
+    "village_rows": 657161
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15139",
+    "file_name": "TAIMS_20260722.zip",
+    "package_day": "20260722",
+    "service_day": "20260718",
+    "sha256": "154457efdc191fb8f548d77c707ef2c362a68e2f50cd54c0b643ea06ad4e88c7",
+    "zip_bytes": 362136203,
+    "village_rows": 622221
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15147",
+    "file_name": "TAIMS_20260723.zip",
+    "package_day": "20260723",
+    "service_day": "20260719",
+    "sha256": "b25f86e7166655a678d96a0b515fb312875d140dc60a604326eb898ba89b8516",
+    "zip_bytes": 319257776,
+    "village_rows": 553357
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15155",
+    "file_name": "TAIMS_20260724.zip",
+    "package_day": "20260724",
+    "service_day": "20260720",
+    "sha256": "9aad9b9dc3d0d5936a89bb1b621d2688f1f2ff06ac0b53c6679edbf8d119940d",
+    "zip_bytes": 530524636,
+    "village_rows": 1006490
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15163",
+    "file_name": "TAIMS_20260725.zip",
+    "package_day": "20260725",
+    "service_day": "20260721",
+    "sha256": "c6c6d8be0c4388bd5338fb2685c2c34c5511ae461253fa819073e7b89827a558",
+    "zip_bytes": 537755289,
+    "village_rows": 1008677
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15171",
+    "file_name": "TAIMS_20260726.zip",
+    "package_day": "20260726",
+    "service_day": "20260722",
+    "sha256": "82f40f675faf716325688ea3e95cadaf773d531cbcdeae3220cda29bdfceb464",
+    "zip_bytes": 552097122,
+    "village_rows": 1032581
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15179",
+    "file_name": "TAIMS_20260727.zip",
+    "package_day": "20260727",
+    "service_day": "20260723",
+    "sha256": "f1a4fa36aaaef0cf7cdb693cbc6ecac41f34494c5b3de61029d968b55ac1d9d4",
+    "zip_bytes": 549597889,
+    "village_rows": 1021548
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15187",
+    "file_name": "TAIMS_20260728.zip",
+    "package_day": "20260728",
+    "service_day": "20260724",
+    "sha256": "c6948c33ce6b11400d14bf8904da17bd195bd5b51fb6e871930b4b24635711cb",
+    "zip_bytes": 574338201,
+    "village_rows": 1057004
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15195",
+    "file_name": "TAIMS_20260729.zip",
+    "package_day": "20260729",
+    "service_day": "20260725",
+    "sha256": "8539f3ea822344cd1445e69330837b3c0e83eb5325bba0b45341c9f3b62c2fa6",
+    "zip_bytes": 413663970,
+    "village_rows": 726783
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15204",
+    "file_name": "TAIMS_20260730.zip",
+    "package_day": "20260730",
+    "service_day": "20260726",
+    "sha256": "dd65cea16457e45df3ffdfae1d6ee879ddcd94133a58cbe3d83df7af3d8a5e30",
+    "zip_bytes": 316370034,
+    "village_rows": 564587
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15212",
+    "file_name": "TAIMS_20260731.zip",
+    "package_day": "20260731",
+    "service_day": "20260727",
+    "sha256": "55d63ac481d8b9666d77139360f9f3d6e746660eceff60ddf032f0140b8469ee",
+    "zip_bytes": 528821541,
+    "village_rows": 999444
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15220",
+    "file_name": "TAIMS_20260801.zip",
+    "package_day": "20260801",
+    "service_day": "20260728",
+    "sha256": "41f5fa969a5c98276346c6fbeea0adc1ef1cbfc3aae95017d2d42557132b1a8d",
+    "zip_bytes": 541049162,
+    "village_rows": 1015192
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15228",
+    "file_name": "TAIMS_20260802.zip",
+    "package_day": "20260802",
+    "service_day": "20260729",
+    "sha256": "213967e161770d1172bd9560bfd77e9f72c465b6f744222057f7c2fec3d5c231",
+    "zip_bytes": 548155466,
+    "village_rows": 1021512
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15236",
+    "file_name": "TAIMS_20260803.zip",
+    "package_day": "20260803",
+    "service_day": "20260730",
+    "sha256": "e81514b59e73c5366f14c516966f749cf81bc2bcaf0299e4ee08746a9a6dfb2a",
+    "zip_bytes": 543478232,
+    "village_rows": 1007003
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15244",
+    "file_name": "TAIMS_20260804.zip",
+    "package_day": "20260804",
+    "service_day": "20260731",
+    "sha256": "ecc02a0c8f43d8325cf366f3da774fe88cb97d2bccc5fa8a41076472b74e3a59",
+    "zip_bytes": 551504751,
+    "village_rows": 1013955
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15255",
+    "file_name": "TAIMS_20260805.zip",
+    "package_day": "20260805",
+    "service_day": "20260801",
+    "sha256": "9bf2fc36a87810fc5e2220cfa77b1901b209905762cbedf5e34b6ed15c639214",
+    "zip_bytes": 392750947,
+    "village_rows": 697972
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15263",
+    "file_name": "TAIMS_20260806.zip",
+    "package_day": "20260806",
+    "service_day": "20260802",
+    "sha256": "823faa612f176200e07f79ad5927da76296e99e4d6b2f809735e1d27c1c197ef",
+    "zip_bytes": 304139562,
+    "village_rows": 552641
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15271",
+    "file_name": "TAIMS_20260807.zip",
+    "package_day": "20260807",
+    "service_day": "20260803",
+    "sha256": "a3446326ec5408b85d1c869d2750534b9ecb6fff3589cd4bf0c1ceed60247a85",
+    "zip_bytes": 514185915,
+    "village_rows": 995136
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15279",
+    "file_name": "TAIMS_20260808.zip",
+    "package_day": "20260808",
+    "service_day": "20260804",
+    "sha256": "07a5a4adbf05f1d46676f3921ee4ca65f9a267b40bacdce20f4a540dc869cdc3",
+    "zip_bytes": 518997235,
+    "village_rows": 1004665
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15287",
+    "file_name": "TAIMS_20260809.zip",
+    "package_day": "20260809",
+    "service_day": "20260805",
+    "sha256": "1d0ffcd606823fc3bb29b4de207f6f5b230119f06b3d04942617369e82e338f8",
+    "zip_bytes": 528747273,
+    "village_rows": 1027334
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15295",
+    "file_name": "TAIMS_20260810.zip",
+    "package_day": "20260810",
+    "service_day": "20260806",
+    "sha256": "5178ac3523eea2e642ce5a8af4ff41c6dde7249fb610492c9148763ddc97f719",
+    "zip_bytes": 529612332,
+    "village_rows": 1024629
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15303",
+    "file_name": "TAIMS_20260811.zip",
+    "package_day": "20260811",
+    "service_day": "20260807",
+    "sha256": "ec13ab2b11e9dec7a10c18281989429220d66806d316b8c061311b59da289376",
+    "zip_bytes": 542574030,
+    "village_rows": 1032432
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15311",
+    "file_name": "TAIMS_20260812.zip",
+    "package_day": "20260812",
+    "service_day": "20260808",
+    "sha256": "bf4da17205a0dc672edcaa86e08371392cb3d655ec58adf74a9e0553c17c686e",
+    "zip_bytes": 392443476,
+    "village_rows": 703002
+  },
+  {
+    "source": "https://t-data.seoul.go.kr/dataprovide/download.do?id=15319",
+    "file_name": "TAIMS_20260813.zip",
+    "package_day": "20260813",
+    "service_day": "20260809",
+    "sha256": "422620f9392fa2249184c68b1a4765f0bcb15bb73de163b21671ab810eb0539b",
+    "zip_bytes": 313645664,
+    "village_rows": 547170
+  }
+]

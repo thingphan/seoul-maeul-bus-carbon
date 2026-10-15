@@ -1,0 +1,16 @@
+﻿feature,mean_abs_tree_shap
+lag7_mean,0.097265445
+route_category,0.08664049
+weekday,0.03461095
+hour,0.01884698
+hour_sin,0.012996392
+lag7_q95,0.010364202
+hour_cos,0.007821069
+lag7_count,0.004965391
+catchment_elderly_share,0.0030832544
+weekend,0.002720495
+length_km,0.0019491637
+public_holiday,0.00072786707
+n_stops,0.0006317615
+dependence_score,0.0006257113
+no_alt_boarding_share,0.00031988218
