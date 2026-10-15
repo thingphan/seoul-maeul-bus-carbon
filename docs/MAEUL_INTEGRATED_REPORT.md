@@ -57,4 +57,4 @@ python src/transit/checks/cluster_check.py                   # 군집분석과 �
 | `data/processed/transit_full/` | 재계산한 노선별 탄소·유형·운영·접근성 표와 요약(로컬) |
 | `docs/report/metrics/integrated/` | 공개용 재계산표: `route_priority.csv`, `route_removal_access.csv`, `carbon_sensitivity.csv`, 요약 JSON |
 | `docs/report/images/integrated/` | 보고서 그림 1~4(PNG·SVG) |
-| `docs/report/작다고감편하지마라_분석보고서.pdf` | 제출본 |
+| `docs/report/작다고간편하지마라_분석보고서.pdf` | 제출본 |

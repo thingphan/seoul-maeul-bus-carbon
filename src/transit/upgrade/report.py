@@ -81,7 +81,7 @@ def main():
     # 1: problem, policy context, objectives, provenance.
     paragraph('서울 마을버스의 서비스 유지형 탈탄소화',ParagraphStyle('title',parent=head,fontSize=19,leading=27,spaceAfter=5))
     paragraph('AI 피크 수요 예측과 제약 기반 차량 배치',ParagraphStyle('title2',parent=head,fontSize=14,leading=21,spaceAfter=9))
-    paragraph('전예준·김명관 | 작다고 감편하지 마라 | 분석·문헌 확인: 2026.10.14',small)
+    paragraph('전예준·김명관 | 작다고 간편하지 마라 | 분석·문헌 확인: 2026.10.14',small)
     paragraph(f"<b>평균 수요에 따른 소형화 후보를 운행별 수요와 운영 제약으로 검증하였다.</b> 기존 평균 3명 미만 시간대의 검증 가능 운행 중 {finding['legacy_low_average_lower_unsafe_rate']:.1%}는 태그 재구성 하한만으로도 16명을 초과했다. AI 상한 예측과 차량 배치를 연결해, 서비스를 유지하면서 전환할 조건과 제외할 이유를 제시한다.")
     heading('1. 주제 및 2. 분석 배경·목적')
     paragraph('마을버스의 짧은 이동은 언덕·골목의 주거지를 지하철과 생활시설에 연결한다. 이용량과 운송수입이 적더라도, 보행이 어렵거나 대체수단이 부족한 시민에게는 전체 이동을 성립시키는 구간일 수 있다. 따라서 탄소 감축은 이러한 연결을 유지하는 운행·차량 조건과 함께 평가해야 한다.')

@@ -215,5 +215,5 @@ python src/transit/checks/ai_speed_stress.py
 ---
 
 <div align="center">
-<sub>작다고 감편하지 마라 · 전예준, 김명관 · 2026</sub>
+<sub>작다고 간편하지 마라 · 전예준, 김명관 · 2026</sub>
 </div>

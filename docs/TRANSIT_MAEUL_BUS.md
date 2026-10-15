@@ -7,7 +7,7 @@ AI 속도 모델([SPEED_MODEL.md](SPEED_MODEL.md))과 차량별 에너지 모델
 - 교통약자 의존도(고령 생활인구, 대체수단 없는 정류장)와 탄소 효율로 노선을 네 유형으로 나눈다.
 - 시간대별 재차인원, 차량 크기·운행 시간 시나리오, 노선 제거 시 고령자 보행 접근성 손실을 계산한다.
 
-제출 보고서는 [분석보고서 PDF](report/작다고감편하지마라_분석보고서.pdf)와 [본문](report/maeul_bus_integrated_report.md)이다. 이 문서는 기본 분석 단계(01~10)의 방법 기록이며, 보고서 수치는 이 단계의 입력을 그대로 쓰되 수정한 버스 에너지(정속 보정 + 정지·출발·체류)로 다시 계산한 `data/processed/transit_full/` 결과다([통합 재현 안내](MAEUL_INTEGRATED_REPORT.md)). 운행별 피크 예측과 차량 배치는 [운행 검증 안내](MAEUL_UPGRADE_IMPLEMENTATION.md)에 있다.
+제출 보고서는 [분석보고서 PDF](report/작다고간편하지마라_분석보고서.pdf)와 [본문](report/maeul_bus_integrated_report.md)이다. 이 문서는 기본 분석 단계(01~10)의 방법 기록이며, 보고서 수치는 이 단계의 입력을 그대로 쓰되 수정한 버스 에너지(정속 보정 + 정지·출발·체류)로 다시 계산한 `data/processed/transit_full/` 결과다([통합 재현 안내](MAEUL_INTEGRATED_REPORT.md)). 운행별 피크 예측과 차량 배치는 [운행 검증 안내](MAEUL_UPGRADE_IMPLEMENTATION.md)에 있다.
 
 ## 실행
 
