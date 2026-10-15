@@ -2,7 +2,7 @@
 
 # AI 기반 수요 예측과 차량 배치 최적화를 통한<br>마을버스 탄소 감축 및 교통약자 이동권 보장 방안
 
-**팀 작다고 감편하지 마라** · 전예준, 김명관<br>
+**팀 작다고 간편하지 마라** · 전예준, 김명관<br>
 <sub>한겨레 × 숲과나눔 「AI와 함께하는 교통문제 해결을 위한 데이터 분석 공모전」</sub>
 
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
