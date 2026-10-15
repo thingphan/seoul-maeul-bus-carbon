@@ -71,7 +71,7 @@
 | 제공 | 국토교통부 · [브이월드](https://www.vworld.kr/) |
 | 형태·규모 | GeoJSON(25개 자치구, EPSG:4326), 1.6MB |
 | 선정 이유 | 분석 공간 범위(서울)를 정의한다 |
-| 사용처 | `pipeline/01` 서울 링크 선별, `transit/report_figures` 지도 바탕 |
+| 사용처 | `pipeline/01` 서울 경계와 교차하는 링크 선별 |
 | 저장 경로 | `raw/boundary/seoul_admin_boundary.geojson` |
 
 #### A3. 교통소통정보 5분 단위 통행속도

@@ -15,7 +15,7 @@ AI 속도 모델([SPEED_MODEL.md](SPEED_MODEL.md))과 차량별 에너지 모델
 
 ```powershell
 pip install -r requirements.txt
-python -m unittest tests.test_link_energy          # 에너지 모델 테스트(10개)
+python -X utf8 -m unittest discover -s tests       # 테스트 19개
 
 # 마을버스 분석: 번호 순서대로
 python src/transit/01_build_bus_route_links.py
@@ -29,24 +29,21 @@ python src/transit/08_access_gap.py
 python src/transit/09_validate_ai_speed.py
 python src/transit/10_route_removal_access.py
 
-# 보고서 수치 재현과 강건성 점검
+# 보고서 수치: 운행 단계 이후 수정 에너지로 다시 계산(transit_full), 이어서 수치 재현·강건성 점검
+python -X utf8 -m src.transit.upgrade.integrated
 python src/transit/checks/report_numbers.py
 python src/transit/checks/assumption_sensitivity.py
 python src/transit/checks/ai_speed_stress.py
 python src/transit/checks/cluster_check.py
-
-# 보고서 그림(선택, docs/report/images에 저장)
-python src/transit/report_figures.py --font-dir <Pretendard 폴더>
 ```
 
-- 결과는 `data/processed/transit/`에 저장된다. 캐시가 있으면 01~10 전체가 약 2~3분 걸린다.
+- 01~10의 결과는 `data/processed/transit/`에 저장된다. 캐시가 있으면 전체가 약 2~3분 걸린다. `integrated`와 `checks/`는 운행 단계 산출물이 필요하다([통합 재계산](MAEUL_INTEGRATED_REPORT.md)).
 - **00(노선 실제 경로 수집)**은 `data/raw/traffic/bus_route_path/route_paths.csv`가 있으면 실행하지 않아도 된다. 다시 받으려면 서울시 버스운행정보 API 인증키를 환경변수로만 넣는다(코드·문서에 적지 않는다).
 
   ```powershell
   $env:SEOUL_BUS_API_KEY = "<인증키>"
   python src/transit/00_fetch_bus_route_paths.py   # 이미 받은 노선은 건너뜀(전부 다시: --refresh)
   ```
-- 그림 글꼴은 [Pretendard](https://github.com/orioncactus/pretendard)(OFL)다. `--font-dir`이나 환경변수 `REPORT_FONT_DIR`로 .otf 폴더를 넘기고, 없으면 맑은 고딕을 쓴다. 노선 지도 그림에는 서울 행정경계 파일(`data/raw/boundary/seoul_admin_boundary.geojson`)이 필요하다.
 
 ### 캐시
 
@@ -67,7 +64,7 @@ python src/transit/report_figures.py --font-dir <Pretendard 폴더>
 | 01 | `01_build_bus_route_links.py` | 실제 경로를 20m 간격으로 나눠 진행 방향이 맞는 표준노드링크에 맵매칭. 노선·정류장 구간 길이는 실제 경로선에서 측정. 정류장별 지하철역·일반버스 접근성 | `routes.csv`, `route_links.csv`, `route_segments.csv`, `bus_stops.csv` |
 | 02 | `02_build_route_demand.py` | 7월 승하차, 정류장 300m 안 평일 낮 고령 생활인구, 대체수단 없는 정류장의 승차 비중, 노선 주변 1,000명당 자가용 승용차 | `route_demand.csv`, `stop_ridership.csv` |
 | 03 | `03_build_route_feasibility.py` | 평일 시간대별 링크 속도 프로필, 노선별 도로 조건(경사·1차로·AI 추정 구간 비중) | `link_speed_weekday_profile.parquet`, `route_feasibility.csv` |
-| 04 | `04_build_route_energy.py` | 전기 중형 마을버스(카운티 일렉트릭 보정) 노선별 에너지 | `route_energy.csv` |
+| 04 | `04_build_route_energy.py` | 전기 중형 마을버스(카운티 일렉트릭 정속 보정) 노선별 에너지. 보고서 수치는 정지·출발·체류를 더한 `upgrade/energy` 값으로 대체 | `route_energy.csv` |
 | 05 | `05_build_route_carbon_breakeven.py` | 구간 승객 누적 → 승객·km, 운행횟수 → 재차인원, 버스·승용차 승객 1명당 탄소, 손익분기, 증편 손익분기 | `route_carbon_breakeven.csv` |
 | 06 | `06_classify_route_priority.py` | 탄소 효율 × 교통약자 의존도 네 유형, 15인승급 소형 전기차 시나리오 | `route_priority.csv` |
 | 07 | `07_build_route_operations.py` | 시간대별 재차인원, 재차인원 3명 미만 시간대 소형화 감축, 운행비 충당 범위(승차당 실수입 600·900·1,200원), 증편 검토 후보 | `route_hourly_load.csv`, `route_operations.csv` |
@@ -81,10 +78,10 @@ python src/transit/report_figures.py --font-dir <Pretendard 폴더>
 
 | 파일 | 확인하는 것 |
 |---|---|
-| `report_numbers.py` | 보고서 핵심 수치를 산출물에서 다시 계산 |
-| `assumption_sensitivity.py` | 승용차 탑승인원(1.2·1.35·1.5·1.82명), 버스·승용차 배출 배율, 대체수단 거리(150·200·300m, 도로망) |
-| `ai_speed_stress.py` | AI 추정 구간 속도 ±5km/h |
-| `cluster_check.py` | K-평균·가우시안 혼합·HDBSCAN 군집의 분리도와 네 유형 일치도 |
+| `report_numbers.py` | 보고서 탄소·유형·접근성 수치를 `transit_full`에서 다시 계산 |
+| `assumption_sensitivity.py` | 승용차 탑승인원(1.2·1.35·1.5·1.82명), 버스·승용차 배출 배율, 대체수단 거리(150·200·300m): 버스 우위 223→218→213→209개, 가장 불리한 배율 194개, 유형 유지 212·208개 |
+| `ai_speed_stress.py` | AI 추정 구간 속도 ±5km/h: 버스 우위 224·223개, 유형 유지 226·226개(230개 중) |
+| `cluster_check.py` | K-평균·가우시안 혼합·HDBSCAN 군집의 분리도와 네 유형 일치도(ARI 0.16 이하로 분리 약함) |
 | `validate_bc_tiers.py` | AI 속도 모델 B·C의 계층별 검증 성능(약 1시간) |
 
 ## 차량별 에너지 모델
