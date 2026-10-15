@@ -19,8 +19,8 @@
        4 노선 조정 검토      의존 낮음 × 효율 낮음
   4. 소형 차량 시나리오(② 유형): 15인승급 소형 전기 승합차(질량 3.5t, 공기저항 면적 CdA 1.4m²,
      냉방 보조전력 3kW 가정)로 같은 노선·운행횟수를 돌릴 때 CO2를 다시 계산한다. 정지·출발 부가 전력은
-     카운티 일렉트릭(인증 질량 6t)의 공인 복합 주행거리로 역산한 값(src/energy/ev_calibration.py)을
-     질량 비(3.5/6)로 줄여 넣는다(가감속 에너지는 질량에 비례). 마을버스와 같은 기준으로 비교하기 위함이다. 차량 크기 효과만 보도록
+     기존 보정 함수를 호출하되, 303/338km가 다른 사양의 정속 값임을 바로잡아 부가 전력은 식별하지 않는다.
+     이 v1 시나리오는 정지·출발 소비가 누락된 근사이며 v2에서는 이를 명시적으로 계산한다. 차량 크기 효과만 보도록
      05의 전기 마을버스 값(bus_ev_g_per_km)과 비교한다(전기 전환 효과는 05에서 따로 낸다). 1회 운행 평균 최대
      재차인원이 8명(15인승의 약 절반) 이하인 노선만 전환 가능으로 본다. 감축량은 크기 효과만(전기 마을버스 대비,
      van_co2_cut_kg_per_day)과 지금 차량 구성 대비(van_co2_cut_vs_current_kg_per_day) 두 가지로 낸다.
@@ -54,7 +54,10 @@ SMALL_VAN_MAX_PEAK_LOAD = 8.0
 
 
 def small_van_parameters() -> VTCPEMParameters:
-    """카운티 일렉트릭의 정지·출발 부가 전력을 질량 비로 옮겨 소형 승합차 보조전력에 더한다."""
+    """정속 근사 소형 승합차 파라미터. 카운티 보정의 부가 전력이 0이므로 보조전력만 반영된다.
+
+    가감속·체류를 포함한 소형차 에너지와 정원 검증은 src/transit/upgrade/energy.py를 쓴다.
+    """
     county, extra_w = calibrate_county_electric()
     van_extra_w = extra_w * SMALL_VAN.mass_kg / county.mass_kg
     return replace(SMALL_VAN, auxiliary_power_w=SMALL_VAN.auxiliary_power_w + van_extra_w)
