@@ -253,13 +253,13 @@ Claude Code(Anthropic)와 OpenAI Codex를 수집·코드·단위·누수·정책
 Python, pandas·NumPy·Polars·PyArrow, GeoPandas·Shapely·Rasterio, XGBoost·scikit-learn·TreeSHAP, SciPy Dijkstra·MILP, Matplotlib·ReportLab. 상세 데이터 출처·계수·코드·민감도·재현 입력 계약은 저장소 문서에 제공한다.
 
 1. 서울시 (2025.12.21). 마을버스 운송서비스 개선 합의.
-2. 김성아 외 (2023). 고령자의 대중교통 이용과 도시특성. 국토지리학회지 57(4).
-3. 김명환·이재현 (2026). 교통약자 수요 기반 저상버스 배치. 대한지리학회지 61(3).
-4. Fiori et al. (2016). VT-CPEM: Model Development and Validation.
-5. 최병주 외 (2020). 서울 CNG버스의 전기버스 대체 환경 효과. 전기전자학회논문지 24(3).
+2. 김성아 외 (2023). 서울시 고령자의 대중교통 이용에 영향을 미치는 도시특성 분석. 국토지리학회지 57(4), 377–390. [doi:10.22905/kaopqj.2023.57.4.2](https://doi.org/10.22905/kaopqj.2023.57.4.2)
+3. 김명환·이재현 (2026). 교통약자 수요 기반 저상버스 배치 전략을 통한 이용 형평성 개선효과 분석. 대한지리학회지 61(3), 351–370. [doi:10.22776/kgs.2026.61.3.351](https://doi.org/10.22776/kgs.2026.61.3.351)
+4. Fiori, C., Ahn, K., Rakha, H. A. (2016). Power-based electric vehicle energy consumption model: Model development and validation. Applied Energy 168, 257–268. [doi:10.1016/j.apenergy.2016.01.097](https://doi.org/10.1016/j.apenergy.2016.01.097)
+5. 최병주 외 (2020). 서울의 CNG버스를 전기버스로 대체했을 때 환경 개선 효과 분석. 전기전자학회논문지 24(3), 821–827. [doi:10.7471/ikeee.2020.24.3.821](https://doi.org/10.7471/ikeee.2020.24.3.821)
 6. Rakha et al. (2011), VT-CPFM; Ahn & Rakha (2019), HEV 연료모형.
 7. Tobler (1993). Geographical Analysis and Modeling, NCGIA TR93-1.
-8. Romano et al. (2019). Conformalized Quantile Regression.
+8. Romano, Y., Patterson, E., Candès, E. (2019). Conformalized Quantile Regression. NeurIPS. [arXiv:1905.03222](https://arxiv.org/abs/1905.03222)
 9. 현대자동차 카운티 일렉트릭 / Karsan e-JEST 제조사 제원.
 10. 기후에너지환경부 (2025.12.18). 전력계수 0.4173tCO₂eq/MWh(2023년).
 11. XGBoost 분위수 회귀 / SciPy MILP 공식 문서.
