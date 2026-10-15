@@ -1,0 +1,60 @@
+{
+  "routes_total": 247,
+  "routes_analyzed": 230,
+  "excluded_routes": 17,
+  "bus_better": 223,
+  "bus_better_share": 0.9695652173913043,
+  "bus_g_per_pkm_median": 91.09537920594227,
+  "car_g_per_pkm_median": 307.96418641696187,
+  "avg_load_median": 5.383717152908565,
+  "breakeven_load_median": 1.5264563723835711,
+  "current_t_per_day": 104.48131597854358,
+  "electric_t_per_day": 90.14667169531269,
+  "electrification_cut_t_per_day": 14.334644283230881,
+  "low_hour_trip_share": 0.16076741341248546,
+  "low_hour_vkm_share": 0.1351893119675727,
+  "hour_small_current_cut_t_per_day": 5.579268031595601,
+  "hour_small_size_cut_t_per_day": 3.7295423092097306,
+  "high_dependence_affected_net_median": 1684.054409810075,
+  "high_dependence_affected_simple_median": 1371.8026966334112,
+  "low_dependence_affected_net_median": 749.3221796452913,
+  "low_dependence_affected_simple_median": 641.098909676519,
+  "new_disconnected_elderly_route_sum_not_population_total": 0.0,
+  "class_counts": {
+    "1 증편·지원 우선": 60,
+    "2 소형 차량 전환": 57,
+    "3 현행 유지": 55,
+    "4 노선 조정 검토": 58
+  },
+  "screening_high_dep_small_candidates": 28,
+  "added_trip_breakeven_median": 8.983510400888537,
+  "expansion_candidates": 29,
+  "input_sha256": {
+    "routes.csv": "8ff609621e64638ac9abc76b25496290e507fc08a39b64d8dd310e3177656526",
+    "route_links.csv": "03d828ec3d5f221811bb22d2bdfa09814b3d80400e96fb03f3c7294d1e98d9b0",
+    "route_segments.csv": "27d2ac57ff69fb327e772d2f9f797ab63f1a66b8960518121cb3f7773cf5a5e6",
+    "bus_stops.csv": "6b3b8e235e4d37664d38cfe6451f97c815a9cb5f4930b8c5fc4f2313ccd9aa40",
+    "route_demand.csv": "a5adb72354bd213bfa3b3ad8c3da2299302828b05000c69f5e22bbc1d446c81e",
+    "route_stops.parquet": "19b35928dd89210a4e57ded8b24a1f9cc3a72e7787a7496186f8076dca7bdbd3",
+    "grid_population_daytime.csv": "e91407ce45e9c0bfce3e6c0e7723d7673c13c79d6738cd9ed66fc0f4a5f4c64e",
+    "grid_walk_access.csv": "cb3f9db077498f32b02ec4d46f699da70863fbb859b05c622594d079ab92851c",
+    "link_speed_weekday_profile.parquet": "83c7dca47117dba9ae042adc3a91029b8d16ae53c37c6b44159bf63711319e78",
+    "route_feasibility.csv": "454b00000490faabf5b6796283538b27d3b270ef7b70cd90666d3ecf2caa0175"
+  },
+  "notes": [
+    "July aggregate cohort versus 35-day trip cohort are different samples.",
+    "Bus diesel/CNG are transferred empirical ratios, not new fuel-meter observations.",
+    "Mean 07–21 weekday speeds used for route energy; actual fleet vehicle size not surveyed.",
+    "Class 2 means relatively low carbon efficiency, not necessarily worse than cars.",
+    "Potential scenarios overlap and must not be added.",
+    "Car charging loss 0.9 applied consistently with electric bus grid-side consumption.",
+    "New disconnected cells counted as impacted; finite additional-time mean excludes them."
+  ],
+  "speed_tier_matched_length_share": {
+    "A_lookup": 0.867915006545267,
+    "B_neighbor_model": 0.10714942491918374,
+    "C_static_model": 0.024935568535549197
+  },
+  "boardings_per_day_all_routes": 930443.935483871,
+  "boardings_per_day_analyzed": 901327.0645161291
+}

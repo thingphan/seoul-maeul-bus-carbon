@@ -1,0 +1,26 @@
+{
+  "low_mean_test_trips": 19126,
+  "low_mean_lower_over16": 1607,
+  "low_mean_upper_over16": 2057,
+  "low_mean_lower_over16_share": 0.08402175049670606,
+  "low_mean_upper_over16_share": 0.10754993202969779,
+  "screening_high_dep_candidates": 28,
+  "screening_candidates_test_matched": 28,
+  "screening_candidates_q99_over16": 24,
+  "case_routes": [
+    {
+      "route": "서대문01",
+      "elderly_new_over10_net": 981.1828655959048,
+      "elderly_new_over10_simple": 939.2700023951992,
+      "peak_q95_upper": 31.0,
+      "class_id": 2
+    },
+    {
+      "route": "관악04",
+      "elderly_new_over10_net": 1829.7418196938984,
+      "elderly_new_over10_simple": 1365.7982903292125,
+      "peak_q95_upper": 53.0,
+      "class_id": 2
+    }
+  ]
+}
