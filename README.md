@@ -13,7 +13,7 @@
 ![Trips](https://img.shields.io/badge/smart%20card-846%2C653%20trips-2A78D6)
 ![Tests](https://img.shields.io/badge/tests-19%20passed-2EA44F)
 
-**[📄 분석보고서 (제출본 PDF)](docs/report/작다고감편하지마라_분석보고서.pdf)** &nbsp;·&nbsp; [보고서 본문](docs/report/maeul_bus_integrated_report.md) &nbsp;·&nbsp; [재현 방법](#repro) &nbsp;·&nbsp; [데이터 명세](data/README.md)
+**[📄 분석보고서 (제출본 PDF)](docs/report/작다고간편하지마라_분석보고서.pdf)** &nbsp;·&nbsp; [보고서 본문](docs/report/maeul_bus_integrated_report.md) &nbsp;·&nbsp; [재현 방법](#repro) &nbsp;·&nbsp; [데이터 명세](data/README.md)
 
 </div>
 
