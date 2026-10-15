@@ -150,7 +150,7 @@ def main():
     paragraph('Python 3.13, pandas·NumPy·PyArrow, XGBoost 3.4, SciPy MILP(HiGHS), Matplotlib, ReportLab. 그림 1~4는 실제 산출물로 생성했다(필수 분석결과 이미지 포함). 공개 자료의 SHA-256·내부 날짜·코드·설정 해시, 테스트와 재현 절차를 함께 보존하였다.',small)
     for i,(title,url) in enumerate(REFERENCES,1):paragraph(f'[{i}] {title} '+link(url,'원문'),small)
     paragraph('분석 코드 및 상세 데이터 출처: '+link(REPO,REPO),small)
-    paragraph('신규 구현·입력 계약·추가 진단: docs/MAEUL_UPGRADE_IMPLEMENTATION.md 및 docs/report/maeul_bus_upgrade_validation.md. 제출 전 저장소에 신규 모듈과 재현 입력 안내를 반영해야 한다.',small)
+    paragraph('구현·입력 계약·추가 진단: docs/MAEUL_UPGRADE_IMPLEMENTATION.md, docs/report/maeul_bus_upgrade_validation.md',small)
 
     output=ROOT/'output/pdf';output.mkdir(parents=True,exist_ok=True)
     target=output/'서울_마을버스_AI_차량정책_분석보고서_5p.pdf'
@@ -162,12 +162,13 @@ def main():
     doc.build(story,onFirstPage=footer,onLaterPages=footer)
     mdtext='# '+'\n\n'.join(markdown)
     mdtext=re.sub(r'<link href="([^"]*)"[^>]*>(.*?)</link>',lambda m:f'[{html.unescape(m.group(2))}]({html.unescape(m.group(1))})',mdtext)
-    md=ROOT/'docs/report/maeul_bus_upgrade_report.md';md.write_text(mdtext,encoding='utf-8')
-    detail=ROOT/'docs/report/maeul_bus_upgrade_validation.md'
+    # 자동 생성 원문은 output/에 둔다. 저장소의 docs/report/maeul_bus_upgrade_validation.md는 이 결과를 정리한 문서다.
+    md=REPORT/'maeul_bus_upgrade_report.md';md.write_text(mdtext,encoding='utf-8')
+    detail=REPORT/'maeul_bus_upgrade_validation_raw.md'
     def mdtable(frame):
         return '\n'.join(['| '+' | '.join(frame.columns)+' |','| '+' | '.join(['---']*len(frame.columns))+' |']+['| '+' | '.join(str(v) for v in row)+' |' for row in frame.itertuples(index=False,name=None)])
     stress=pd.read_csv(OUT/'robustness_metrics.csv')
-    full='\n\n'.join(['# 업그레이드 분석 상세 검증', '## 데이터 품질\n```json\n'+json.dumps({'demand':demand,'source_validation':validation,'distance':distance,'topology':load('topology_summary.json'),'candidate_reassessment':finding},ensure_ascii=False,indent=2)+'\n```', '## AI 검증\n'+mdtable(metrics), '## 차량 배치 검증\n'+mdtable(pmetrics), '## 물리·운영 조건 민감도\n'+mdtable(stress), '## 구현·가정\n'+(ROOT/'docs/MAEUL_UPGRADE_IMPLEMENTATION.md').read_text(encoding='utf-8'), '## 원자료와 기존 속도 산출물의 상세 출처\n'+(ROOT/'docs/report/maeul_bus_report.md').read_text(encoding='utf-8').split('## 3. 활용 데이터')[1].split('## 4.')[0], '## 연구·정책 출처\n'+'\n'.join(f'{i}. [{t}]({u})' for i,(t,u) in enumerate(REFERENCES,1))])
+    full='\n\n'.join(['# 업그레이드 분석 상세 검증', '## 데이터 품질\n```json\n'+json.dumps({'demand':demand,'source_validation':validation,'distance':distance,'topology':load('topology_summary.json'),'candidate_reassessment':finding},ensure_ascii=False,indent=2)+'\n```', '## AI 검증\n'+mdtable(metrics), '## 차량 배치 검증\n'+mdtable(pmetrics), '## 물리·운영 조건 민감도\n'+mdtable(stress), '## 구현·가정\n'+(ROOT/'docs/MAEUL_UPGRADE_IMPLEMENTATION.md').read_text(encoding='utf-8'), '## 연구·정책 출처\n'+'\n'.join(f'{i}. [{t}]({u})' for i,(t,u) in enumerate(REFERENCES,1))])
     detail.write_text(full,encoding='utf-8')
     snapshots=ROOT/'docs/report/metrics/upgrade';snapshots.mkdir(parents=True,exist_ok=True)
     for name in ['model_metrics.csv','policy_metrics.csv','constraint_attrition.csv','robustness_metrics.csv','fleet_allocation.csv','shap_summary.csv']:

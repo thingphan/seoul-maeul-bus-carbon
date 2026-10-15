@@ -1,9 +1,10 @@
-"""보고서(docs/report/maeul_bus_report.md)의 핵심 수치를 분석 산출물에서 다시 계산해 출력한다(읽기만 함).
+"""제출 보고서(docs/report/maeul_bus_integrated_report.md)의 탄소·유형·접근성 수치를 분석 산출물에서 다시 계산해 출력한다(읽기만 함).
 
 보고서 순서대로 출력한다. 감축량은 모두 '현재 차량 구성 대비' 하루 값이며, 연 값은 하루 × 365이다.
-AI 속도 시험·가정 민감도·군집 점검·B/C 등급별 성능은 같은 폴더의 다른 스크립트가 계산한다.
+가정 민감도·군집 점검·B/C 등급별 성능은 같은 폴더의 다른 스크립트가 계산한다.
 
-입력: data/processed/transit/의 01~10 산출물, data/processed/seoul_link_dimension.csv
+입력: data/processed/transit_full/(upgrade/integrated가 수정 에너지로 다시 계산한 01~10 산출물), data/processed/seoul_link_dimension.csv
+      기본 경로(transit/)의 정속 근사 결과를 보려면 TRANSIT을 바꿔 실행한다.
 사용: python src/transit/checks/report_numbers.py
 """
 
@@ -15,7 +16,7 @@ import numpy as np
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-TRANSIT = PROJECT_ROOT / "data" / "processed" / "transit"
+TRANSIT = PROJECT_ROOT / "data" / "processed" / "transit_full"
 DIMENSION_CSV = PROJECT_ROOT / "data" / "processed" / "seoul_link_dimension.csv"
 CASES = ("서대문01", "관악04")
 
@@ -64,7 +65,7 @@ def main() -> None:
     ai_by_class = p[["ROUTE_ID", "class_id"]].merge(feas, on="ROUTE_ID").groupby("class_id")["unobserved_share"].median()
     print("유형별 AI 추정 구간 비중(노선 중앙값):", ai_by_class.round(3).to_dict())
 
-    section("결과 6.1 조건부 친환경")
+    section("결과 1) 탄소 효율")
     print(f"버스 우위 노선 {int(c['bus_better'].sum())}/{len(c)} ({c['bus_better'].mean():.1%})")
     print(f"승객·km당 CO2 중앙: 버스 {c['bus_g_per_pkm'].median():.1f}g, 승용차 {c['car_g_per_pkm'].median():.1f}g")
     print(f"손익분기 재차인원 중앙 {c['breakeven_load'].median():.2f}명, 실제 재차인원 중앙 {c['avg_load'].median():.2f}명")
@@ -83,7 +84,7 @@ def main() -> None:
     added = c["added_trip_breakeven_riders"]
     print(f"증편 손익분기 전환인원 중앙 {added.median():.1f}명(사분위 {added.quantile(.25):.1f}~{added.quantile(.75):.1f})")
 
-    section("결과 6.2 감축 시나리오(하루 톤, 연 = × 365)")
+    section("결과 1) 감축 잠재량(하루 톤, 연 = × 365)")
     now = c["bus_co2_kg_per_day"].sum() / 1000
     electric = now - c["bus_co2_kg_per_day_all_electric"].sum() / 1000
     offpeak = o["van_offpeak_cut_vs_current_kg_per_day"].sum() / 1000
@@ -96,7 +97,7 @@ def main() -> None:
     print(f"소형 차량 전환 유형 {len(two)}개 중 전환 가능 {int(two['van_feasible'].sum())}개, 감축 "
           f"{p['van_co2_cut_vs_current_kg_per_day'].sum() / 1000:.2f}(연 {p['van_co2_cut_vs_current_kg_per_day'].sum() / 1000 * 365:,.0f})")
 
-    section("결과 6.3 네 유형")
+    section("결과 2)·3) 정책 유형과 노선 제거 접근성")
     ops = o[["ROUTE_ID", "deficit_at_900", "route_cars_per_1000"]]
     table = (p.merge(ops, on="ROUTE_ID").merge(rm[["ROUTE_ID", "simple_elderly_affected", "net_elderly_affected"]], on="ROUTE_ID")
              .merge(feas[["ROUTE_ID", "slope_mean", "one_lane_share"]], on="ROUTE_ID"))

@@ -1,15 +1,18 @@
 """AI가 추정한 구간(B·C 등급)의 속도를 한쪽으로 틀리게 잡아도 결론이 유지되는지 확인한다.
 
-AI 구간 속도를 모두 −5km/h, +5km/h(B 등급 MAE 4.6km/h보다 큼) 바꾼 뒤, 05와 같은 방법으로 버스·승용차 배출을
-다시 계산하고 06의 네 유형 규칙으로 다시 분류한다. 버스와 승용차 모두 같은 속도를 쓴다.
+AI 구간 속도를 모두 −5km/h, +5km/h(B 등급 MAE 4.6km/h보다 큼) 바꾼 뒤, 보고서와 같은 방법(정속 링크 에너지 +
+정류장 정지·출발·체류 에너지, 충전 손실, 07~21시 평균)으로 버스·승용차 배출을 다시 계산하고 네 유형 규칙으로
+다시 분류한다. 버스와 승용차 모두 같은 속도를 쓴다.
 
-입력: data/processed/transit/route_priority.csv(06), link_speed_weekday_profile.parquet(03), route_links.csv(01)
+입력: data/processed/transit_full/route_priority.csv·routes.csv·link_speed_weekday_profile.parquet(upgrade/integrated),
+      config/maeul_upgrade/scenario.json
 사용: python src/transit/checks/ai_speed_stress.py
 """
 
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -17,6 +20,7 @@ from pathlib import Path
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 sys.path.insert(0, str(PROJECT_ROOT / "src" / "transit"))
 
@@ -25,8 +29,10 @@ from energy.ev_calibration import calibrate_county_electric, calibrate_two_point
 from energy.link_energy import VTCPEMParameters, calculate_link_energy  # noqa: E402
 from route_classes import assign_classes  # noqa: E402
 from route_data import load_route_link_hours  # noqa: E402
+from src.transit.upgrade.energy import stop_energy_kwh  # noqa: E402
 
-TRANSIT = PROJECT_ROOT / "data" / "processed" / "transit"
+TRANSIT = PROJECT_ROOT / "data" / "processed" / "transit_full"
+SCENARIO = PROJECT_ROOT / "config" / "maeul_upgrade" / "scenario.json"
 SHIFT_KMH = 5.0
 
 
@@ -39,16 +45,19 @@ def load_carbon_module():
 
 def main() -> None:
     cb = load_carbon_module()
+    cfg = json.loads(SCENARIO.read_text(encoding="utf-8"))
     priority = pd.read_csv(TRANSIT / "route_priority.csv", dtype={"ROUTE_ID": str})
+    routes = pd.read_csv(TRANSIT / "routes.csv", dtype={"ROUTE_ID": str}).set_index("ROUTE_ID")[["length_km", "n_stops"]]
     frame = load_route_link_hours(kind="마을버스")
     frame = frame[frame["ROUTE_ID"].isin(priority["ROUTE_ID"])]
     tier = pd.read_parquet(TRANSIT / "link_speed_weekday_profile.parquet", columns=["LINK_ID", "tier"]).drop_duplicates("LINK_ID")
     frame = frame.merge(tier, on="LINK_ID")
     ai = frame["tier"] != "A_lookup"
 
-    county, extra = calibrate_county_electric()
-    bus = replace(VTCPEMParameters(), mass_kg=7000.0, drag_coefficient=county.drag_coefficient,
-                  frontal_area_m2=county.frontal_area_m2, auxiliary_power_w=5000.0 + extra)
+    county, _ = calibrate_county_electric()
+    bus = replace(VTCPEMParameters(), mass_kg=cfg["reference_operating_mass_kg"], drag_coefficient=county.drag_coefficient,
+                  frontal_area_m2=county.frontal_area_m2, auxiliary_power_w=cfg["reference_aux_kw"] * 1000)
+    charger = cfg["charger_efficiency_assumed"]
     ev, ev_extra = calibrate_two_point(cb.IONIQ5, cb.IONIQ5_LABEL)
     ev = replace(ev, auxiliary_power_w=ev.auxiliary_power_w + ev_extra)
     shares = cb.car_fleet_shares()
@@ -59,15 +68,21 @@ def main() -> None:
         inputs = frame[["LINK_ID", "LENGTH", "slope_pct"]].assign(speed_kmh=speed.clip(lower=3.0))
         inputs = inputs[["LINK_ID", "LENGTH", "speed_kmh", "slope_pct"]]
         f = frame[["ROUTE_ID", "시간코드", "LENGTH"]].copy()
-        f["bus"] = calculate_link_energy(inputs, bus)["energy_ev_wh"].to_numpy()
+        f["bus"] = calculate_link_energy(inputs, bus)["energy_ev_kwh"].to_numpy()
         f["ev"] = calculate_link_energy(inputs, ev)["energy_ev_wh"].to_numpy()
         for fuel, preset in ice_fuel.CAR_PRESETS.items():
             f[fuel] = ice_fuel.calculate_link_fuel(inputs, preset)["co2_g"].to_numpy()
         f["하이브리드"] = hev_fuel.calculate_link_fuel(inputs)["co2_g"].to_numpy()
         cols = ["bus", "ev", *ice_fuel.CAR_PRESETS, "하이브리드"]
-        hourly = f.groupby(["ROUTE_ID", "시간코드"])[cols + ["LENGTH"]].sum()
-        per_km = hourly[cols].div(hourly["LENGTH"], axis=0).groupby("ROUTE_ID").mean()
-        car_g = sum(shares[k] * (per_km["ev"] * cb.GRID_KG_CO2_PER_KWH * 1000 if k == "전기" else per_km[k] * 1000)
+        hourly = f[f["시간코드"].between(8, 22)].groupby(["ROUTE_ID", "시간코드"])[cols + ["LENGTH"]].sum()
+        per_m = hourly[cols].div(hourly["LENGTH"], axis=0)
+        r = routes.reindex(per_m.index.get_level_values("ROUTE_ID"))
+        stop = stop_energy_kwh(cfg["reference_operating_mass_kg"], cfg["stop_target_speed_kmh_assumed"],
+                               r["n_stops"].to_numpy() * cfg["stop_fraction_assumed"], bus.total_efficiency,
+                               cfg["regenerative_efficiency_assumed"], cfg["reference_aux_kw"], cfg["dwell_seconds_assumed"])
+        per_m["bus"] = (per_m["bus"] * 1000 + stop / r["length_km"].to_numpy()) / charger  # kWh/km, 전력망 기준
+        per_km = per_m.groupby("ROUTE_ID").mean()
+        car_g = sum(shares[k] * (per_km["ev"] / charger * cb.GRID_KG_CO2_PER_KWH * 1000 if k == "전기" else per_km[k] * 1000)
                     for k in shares)
         kwh = per_km["bus"]
         bus_g = (fleet["전기"] * kwh * cb.GRID_KG_CO2_PER_KWH * 1000 + fleet["경유"] * bus_fuel.diesel_g_per_km(kwh)

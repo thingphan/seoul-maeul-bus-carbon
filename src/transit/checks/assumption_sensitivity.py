@@ -5,8 +5,8 @@
 3. 대체수단 기준: 일반버스 정류장 150·200(기준)·300m(지하철 500m는 고정)
 4. 대체수단 거리를 직선 대신 도로망 거리로(08 산출물): 유형이 바뀐 노선이 기준선 근처인지
 
-입력: data/processed/transit/route_carbon_breakeven.csv(05), route_priority.csv(06), bus_stops.csv·routes.csv(01),
-      route_class_network.csv(08)
+입력: data/processed/transit_full/route_carbon_breakeven.csv·route_priority.csv·bus_stops.csv·routes.csv(upgrade/integrated),
+      route_class_network.csv(08을 같은 폴더에 실행했을 때만 4번 점검)
 사용: python src/transit/checks/assumption_sensitivity.py
 """
 
@@ -26,7 +26,7 @@ from route_classes import assign_classes  # noqa: E402
 from route_data import load_route_stops, load_stop_ridership  # noqa: E402
 from route_kinds import branch_stop_weights, ridership_key  # noqa: E402
 
-TRANSIT = PROJECT_ROOT / "data" / "processed" / "transit"
+TRANSIT = PROJECT_ROOT / "data" / "processed" / "transit_full"
 NEAR_PCT = 0.10  # 기준선(중앙값)에서 백분위 10%p 이내면 '기준선 근처'
 
 
@@ -88,6 +88,9 @@ def trunk_radius(priority: pd.DataFrame) -> None:
 
 def network_distance(priority: pd.DataFrame) -> None:
     print("== 4. 대체수단 거리를 도로망 거리로")
+    if not (TRANSIT / "route_class_network.csv").exists():
+        print("  route_class_network.csv가 없어 건너뜀(08을 같은 입력 폴더로 실행하면 계산)")
+        return
     net = read("route_class_network.csv")
     m = priority[["ROUTE_ID", "dependence_score", "bus_g_per_pkm"]].merge(net, on="ROUTE_ID")
     near = ((m["dependence_score"].rank(pct=True) - 0.5).abs() < NEAR_PCT) | \

@@ -3,7 +3,7 @@
 K-평균의 실루엣, 가우시안 혼합의 BIC, HDBSCAN의 군집 수·잡음 비율, 그리고 수동 네 유형과의 일치도(ARI)를 본다.
 군집이 뚜렷하지 않으면(실루엣 낮음, 최적 군집 수 불명확, 잡음 비율 높음) 해석이 쉬운 중앙값 규칙을 쓴다.
 
-입력: data/processed/transit/route_priority.csv(06), route_demand.csv(02), route_feasibility.csv(03)
+입력: data/processed/transit_full/route_priority.csv·route_demand.csv·route_feasibility.csv(upgrade/integrated)
 사용: python src/transit/checks/cluster_check.py
 """
 
@@ -19,7 +19,7 @@ from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import StandardScaler
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-TRANSIT = PROJECT_ROOT / "data" / "processed" / "transit"
+TRANSIT = PROJECT_ROOT / "data" / "processed" / "transit_full"
 
 BASE = ["catchment_elderly_share", "catchment_elderly_day", "no_alt_boarding_share", "bus_g_per_pkm"]
 RICH = BASE + ["route_cars_per_1000", "boardings_per_day", "slope_mean", "one_lane_share", "day_speed_kmh", "trips_per_day"]
