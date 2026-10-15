@@ -10,6 +10,10 @@ dist/
 .mypy_cache/
 .ruff_cache/
 
+# 보고서·그림 생성 결과(코드로 재생성)
+output/
+tmp/
+
 # Virtual environments and local config
 .venv/
 venv/
